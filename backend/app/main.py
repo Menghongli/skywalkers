@@ -2,10 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routers import auth, games, players, stats, admin
+from .middlewares import ManagerAuthMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Skywalkers Basketball Tracker", version="1.0.0")
+
+# Add manager auth middleware
+app.add_middleware(ManagerAuthMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

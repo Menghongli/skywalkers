@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List
 from ..database import get_db
 from ..models import User, UserRole
 from ..schemas import UserResponse, UserCreate
-from ..dependencies import get_current_manager
 from ..auth.auth import get_password_hash
 from ..services.email import email_service
 
@@ -13,17 +12,19 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/users", response_model=List[UserResponse])
 async def get_all_users(
-    db: Session = Depends(get_db),
-    current_manager: User = Depends(get_current_manager)
+    request: Request,
+    db: Session = Depends(get_db)
 ):
+    # Manager auth is handled by middleware
     users = db.query(User).all()
     return users
+
 
 @router.post("/create-manager", response_model=UserResponse)
 async def create_manager(
     user_data: UserCreate,
-    db: Session = Depends(get_db),
-    current_manager: User = Depends(get_current_manager)
+    request: Request,
+    db: Session = Depends(get_db)
 ):
     db_user = db.query(User).filter(User.email == user_data.email).first()
     if db_user:
@@ -42,7 +43,8 @@ async def create_manager(
         role=UserRole.MANAGER,
         is_verified=False,
         verification_token=verification_token,
-        verification_sent_at=datetime.utcnow()
+        verification_sent_at=datetime.utcnow(),
+        jersey_number=user_data.jersey_number if user_data.jersey_number else None
     )
     
     db.add(db_user)
@@ -64,9 +66,12 @@ async def create_manager(
 @router.delete("/users/{user_id}")
 async def delete_user(
     user_id: int,
-    db: Session = Depends(get_db),
-    current_manager: User = Depends(get_current_manager)
+    request: Request,
+    db: Session = Depends(get_db)
 ):
+    # Get current manager from middleware
+    current_manager = request.state.current_manager
+    
     # Prevent self-deletion
     if user_id == current_manager.id:
         raise HTTPException(
@@ -91,8 +96,8 @@ async def delete_user(
 @router.put("/users/{user_id}/verify")
 async def manually_verify_user(
     user_id: int,
-    db: Session = Depends(get_db),
-    current_manager: User = Depends(get_current_manager)
+    request: Request,
+    db: Session = Depends(get_db)
 ):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
