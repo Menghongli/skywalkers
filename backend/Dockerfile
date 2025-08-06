@@ -17,5 +17,4 @@ COPY . .
 # Set environment variable for port
 ENV PORT=8000
 
-# Start command
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Railway will use Procfile for process commands
