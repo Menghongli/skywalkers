@@ -21,4 +21,4 @@ frontend-build:
     cd frontend && npm run build
 
 frontend-install:
-    cd frontend && npm install
+    cd frontend && npm install axios react-router-dom @types/react-router-dom

@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Enum, Boolean, DateTime
 from sqlalchemy.orm import relationship
 import enum
+from datetime import datetime
 from ..database import Base
 
 class UserRole(str, enum.Enum):
@@ -15,5 +16,8 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     name = Column(String, nullable=False)
     role = Column(Enum(UserRole), nullable=False)
+    is_verified = Column(Boolean, default=False, nullable=False)
+    verification_token = Column(String, nullable=True)
+    verification_sent_at = Column(DateTime, nullable=True)
 
     player = relationship("Player", back_populates="user", uselist=False)
