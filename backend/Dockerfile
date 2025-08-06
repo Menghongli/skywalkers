@@ -5,14 +5,14 @@ WORKDIR /app
 # Install uv
 RUN pip install uv
 
-# Copy backend files
-COPY backend/pyproject.toml backend/uv.lock ./
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
 
 # Install dependencies
 RUN uv sync --frozen
 
-# Copy backend application code
-COPY backend/ ./
+# Copy application code
+COPY . .
 
 # Set environment variable for port
 ENV PORT=8000
