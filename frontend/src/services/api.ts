@@ -23,6 +23,7 @@ export interface User {
   name: string;
   role: 'manager' | 'player';
   is_verified: boolean;
+  jersey_number?: number;
 }
 
 export interface LoginData {
@@ -41,6 +42,7 @@ export interface RegisterData {
 export interface AuthResponse {
   access_token: string;
   token_type: string;
+  user: User;
 }
 
 export const authAPI = {

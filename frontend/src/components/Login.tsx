@@ -35,8 +35,10 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
       const mockUser = {
         id: 1,
         email: formData.email,
-        name: 'User', // This should come from API response
-        role: 'manager' as const, // This should come from API response
+        name: response.user.name,
+        role: response.user.role,
+        is_verified: response.user.is_verified,
+        jersey_number: response.user.jersey_number,
       };
       
       login(response.access_token, mockUser);
