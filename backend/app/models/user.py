@@ -19,5 +19,6 @@ class User(Base):
     is_verified = Column(Boolean, default=False, nullable=False)
     verification_token = Column(String, nullable=True)
     verification_sent_at = Column(DateTime, nullable=True)
+    jersey_number = Column(Integer, nullable=True, unique=True)
 
-    player = relationship("Player", back_populates="user", uselist=False)
+    game_stats = relationship("PlayerGameStats", back_populates="user")

@@ -23,18 +23,17 @@ class UserResponse(BaseModel):
     email: str
     name: str
     role: UserRole
-    
+    is_verified: bool
+    jersey_number: Optional[int] = 0
+
     class Config:
         from_attributes = True
 
-class PlayerResponse(BaseModel):
-    id: int
-    user_id: int
-    jersey_number: int
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
     user: UserResponse
-    
-    class Config:
-        from_attributes = True
+
 
 class GameCreate(BaseModel):
     opponent_name: str
@@ -54,18 +53,18 @@ class GameResponse(BaseModel):
         from_attributes = True
 
 class PlayerGameStatsCreate(BaseModel):
-    player_id: int
+    user_id: int
     game_id: int
     points: int = 0
     fouls: int = 0
 
 class PlayerGameStatsResponse(BaseModel):
     id: int
-    player_id: int
+    user_id: int
     game_id: int
     points: int
     fouls: int
-    player: PlayerResponse
+    user: UserResponse
     
     class Config:
         from_attributes = True

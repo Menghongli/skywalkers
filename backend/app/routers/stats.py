@@ -13,9 +13,9 @@ async def get_game_stats(game_id: int, db: Session = Depends(get_db), current_us
     stats = db.query(PlayerGameStats).filter(PlayerGameStats.game_id == game_id).all()
     return stats
 
-@router.get("/player/{player_id}", response_model=List[PlayerGameStatsResponse])
-async def get_player_stats(player_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    stats = db.query(PlayerGameStats).filter(PlayerGameStats.player_id == player_id).all()
+@router.get("/player/{user_id}", response_model=List[PlayerGameStatsResponse])
+async def get_player_stats(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    stats = db.query(PlayerGameStats).filter(PlayerGameStats.user_id == user_id).all()
     return stats
 
 @router.post("/", response_model=PlayerGameStatsResponse)
@@ -25,7 +25,7 @@ async def create_stats(
     current_user: User = Depends(get_current_manager)
 ):
     existing_stats = db.query(PlayerGameStats).filter(
-        PlayerGameStats.player_id == stats.player_id,
+        PlayerGameStats.user_id == stats.user_id,
         PlayerGameStats.game_id == stats.game_id
     ).first()
     

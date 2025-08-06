@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta, datetime
 from ..database import get_db
-from ..models import User, Player, UserRole
-from ..schemas import UserCreate, UserLogin, Token, UserResponse
+from ..models import User, UserRole
+from ..schemas import UserCreate, UserLogin, Token, UserResponse, LoginResponse
 from ..auth.auth import verify_password, get_password_hash, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from ..services.email import email_service
 
@@ -24,6 +24,15 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
             detail="Email already registered"
         )
     
+    # Check jersey number before creating user
+    if user.role == UserRole.PLAYER and user.jersey_number:
+        existing_user = db.query(User).filter(User.jersey_number == user.jersey_number).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Jersey number already taken"
+            )
+    
     verification_token = email_service.generate_verification_token()
     hashed_password = get_password_hash(user.password)
     db_user = User(
@@ -33,7 +42,8 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
         role=user.role,
         is_verified=False,
         verification_token=verification_token,
-        verification_sent_at=datetime.utcnow()
+        verification_sent_at=datetime.utcnow(),
+        jersey_number=user.jersey_number if user.role == UserRole.PLAYER and user.jersey_number else None
     )
     db.add(db_user)
     db.commit()
@@ -49,24 +59,9 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
     if not email_sent:
         print(f"Warning: Failed to send verification email to {db_user.email}")
     
-    if user.role == UserRole.PLAYER and user.jersey_number:
-        existing_player = db.query(Player).filter(Player.jersey_number == user.jersey_number).first()
-        if existing_player:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Jersey number already taken"
-            )
-        
-        db_player = Player(
-            user_id=db_user.id,
-            jersey_number=user.jersey_number
-        )
-        db.add(db_player)
-        db.commit()
-    
     return db_user
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=LoginResponse)
 async def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if not db_user or not verify_password(user.password, db_user.password_hash):
@@ -80,7 +75,22 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
     access_token = create_access_token(
         data={"sub": db_user.email}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    # Create user response with jersey number if available
+    user_data = {
+        "id": db_user.id,
+        "email": db_user.email,
+        "name": db_user.name,
+        "role": db_user.role,
+        "is_verified": db_user.is_verified,
+        "jersey_number": db_user.jersey_number
+    }
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_data
+    }
 
 @router.post("/verify-email")
 async def verify_email(token: str, db: Session = Depends(get_db)):

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List
 from ..database import get_db
-from ..models import User, Player, UserRole
+from ..models import User, UserRole
 from ..schemas import UserResponse, UserCreate
 from ..dependencies import get_current_manager
 from ..auth.auth import get_password_hash
@@ -81,11 +81,7 @@ async def delete_user(
             detail="User not found"
         )
     
-    # Delete associated player record if exists
-    if user.role == UserRole.PLAYER:
-        player = db.query(Player).filter(Player.user_id == user_id).first()
-        if player:
-            db.delete(player)
+    # No need to delete associated player record - jersey_number is now part of User
     
     db.delete(user)
     db.commit()

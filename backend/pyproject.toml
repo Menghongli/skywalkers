@@ -3,12 +3,13 @@ name = "skywalkers-api"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.16.4",
     "emails>=0.6",
     "fastapi>=0.116.1",
-    "passlib[bcrypt]>=1.7.4",
+    "passlib[argon2]>=1.7.4",
+    "bcrypt>=4.0.0,<5.0.0",
     "pydantic[email]>=2.11.7",
     "python-jose[cryptography]>=3.5.0",
     "python-multipart>=0.0.20",
