@@ -89,4 +89,101 @@ export const adminAPI = {
   },
 };
 
+export interface Game {
+  id: number;
+  opponent_name: string;
+  date: string;
+  final_score_skywalkers?: number;
+  final_score_opponent?: number;
+  video_url?: string;
+}
+
+export interface GameCreate {
+  opponent_name: string;
+  date: string;
+  final_score_skywalkers?: number;
+  final_score_opponent?: number;
+}
+
+export const gamesAPI = {
+  getAll: async (): Promise<Game[]> => {
+    const response = await api.get('/games');
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<Game> => {
+    const response = await api.get(`/games/${id}`);
+    return response.data;
+  },
+
+  create: async (data: GameCreate): Promise<Game> => {
+    const response = await api.post('/games', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: GameCreate): Promise<Game> => {
+    const response = await api.put(`/games/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<{ message: string }> => {
+    const response = await api.delete(`/games/${id}`);
+    return response.data;
+  },
+};
+
+export interface PlayerGameStats {
+  id: number;
+  user_id: number;
+  game_id: number;
+  points: number;
+  fouls: number;
+  user: User;
+}
+
+export interface LadderEntry {
+  id: number;
+  team_name: string;
+  position: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  points_for: number;
+  points_against: number;
+  win_percentage: number;
+  games_played: number;
+  season?: string;
+  division?: string;
+  last_updated: string;
+}
+
+export const statsAPI = {
+  getPlayerStats: async (userId: number): Promise<PlayerGameStats[]> => {
+    const response = await api.get(`/stats/player/${userId}`);
+    return response.data;
+  },
+
+  getGameStats: async (gameId: number): Promise<PlayerGameStats[]> => {
+    const response = await api.get(`/stats/game/${gameId}`);
+    return response.data;
+  },
+};
+
+export const ladderAPI = {
+  getLadder: async (limit: number = 10): Promise<LadderEntry[]> => {
+    const response = await api.get(`/ladder?limit=${limit}`);
+    return response.data;
+  },
+
+  getTeamPosition: async (teamName: string): Promise<LadderEntry> => {
+    const response = await api.get(`/ladder/team/${encodeURIComponent(teamName)}`);
+    return response.data;
+  },
+
+  updateLadder: async (url?: string): Promise<{ message: string }> => {
+    const response = await api.post('/ladder/update', url ? { url } : {});
+    return response.data;
+  },
+};
+
 export default api;

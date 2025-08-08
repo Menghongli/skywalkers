@@ -16,3 +16,12 @@ test:
 clean:
     cd backend && rm -rf .pytest_cache __pycache__ .coverage
     find . -name "*.pyc" -delete
+
+ladder:
+    cd backend && uv run ladder
+
+update-ladder:
+    #!/usr/bin/env bash
+    cd backend
+    echo "🔄 Running scheduled ladder update..."
+    uv run python -c 'from app.services.ladder_service import scheduled_ladder_update; import logging; logging.basicConfig(level=logging.INFO); result = scheduled_ladder_update(); print("✅ Success!" if result else "❌ Failed")'

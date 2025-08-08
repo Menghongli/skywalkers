@@ -1,12 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from .routers import auth, games, players, stats, admin
+from .routers import auth, games, players, stats, admin, ladder
 from .middlewares import ManagerAuthMiddleware
+from .scheduler import get_scheduler
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Skywalkers Basketball Tracker", version="1.0.0")
+
+# Initialize scheduler on startup
+@app.on_event("startup")
+async def startup_event():
+    # Initialize the scheduler
+    scheduler = get_scheduler()
+    print("Scheduler initialized with scheduled tasks")
 
 # Add manager auth middleware
 app.add_middleware(ManagerAuthMiddleware)
@@ -24,6 +32,7 @@ app.include_router(admin.router)
 app.include_router(games.router)
 app.include_router(players.router)
 app.include_router(stats.router)
+app.include_router(ladder.router)
 
 @app.get("/")
 async def root():

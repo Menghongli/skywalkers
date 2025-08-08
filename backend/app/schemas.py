@@ -68,3 +68,21 @@ class PlayerGameStatsResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class LadderEntryResponse(BaseModel):
+    id: int
+    team_name: str
+    position: int
+    wins: int
+    draws: int
+    losses: int
+    points_for: int
+    points_against: int
+    win_percentage: float
+    games_played: int
+    season: Optional[str]
+    division: Optional[str]
+    last_updated: str
+    
+    class Config:
+        from_attributes = True
