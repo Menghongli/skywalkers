@@ -7,7 +7,7 @@ from .scheduler import get_scheduler
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Skywalkers Basketball Tracker", version="1.0.0")
+app = FastAPI(title="Skywalkers Basketball Tracker", version="1.0.0", redirect_slashes=False)
 
 # Initialize scheduler on startup
 @app.on_event("startup")
