@@ -8,7 +8,7 @@ from ..dependencies import get_current_user, get_current_manager
 
 router = APIRouter(prefix="/games", tags=["games"])
 
-@router.get("/", response_model=List[GameResponse])
+@router.get("", response_model=List[GameResponse])
 async def get_games(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     games = db.query(Game).order_by(Game.date.desc()).all()
     return games
@@ -20,7 +20,7 @@ async def get_game(game_id: int, db: Session = Depends(get_db), current_user: Us
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
     return game
 
-@router.post("/", response_model=GameResponse)
+@router.post("", response_model=GameResponse)
 async def create_game(
     game: GameCreate, 
     db: Session = Depends(get_db), 

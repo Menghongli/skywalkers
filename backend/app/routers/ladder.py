@@ -12,7 +12,7 @@ from ..scheduler import get_scheduler
 
 router = APIRouter(prefix="/ladder", tags=["ladder"])
 
-@router.get("/", response_model=List[LadderEntryResponse])
+@router.get("", response_model=List[LadderEntryResponse])
 async def get_ladder(
     limit: int = 10,
     db: Session = Depends(get_db), 

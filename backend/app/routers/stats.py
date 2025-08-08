@@ -18,7 +18,7 @@ async def get_player_stats(user_id: int, db: Session = Depends(get_db), current_
     stats = db.query(PlayerGameStats).filter(PlayerGameStats.user_id == user_id).all()
     return stats
 
-@router.post("/", response_model=PlayerGameStatsResponse)
+@router.post("", response_model=PlayerGameStatsResponse)
 async def create_stats(
     stats: PlayerGameStatsCreate,
     db: Session = Depends(get_db),

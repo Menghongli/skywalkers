@@ -8,7 +8,7 @@ from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/players", tags=["players"])
 
-@router.get("/", response_model=List[UserResponse])
+@router.get("", response_model=List[UserResponse])
 async def get_players(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     players = db.query(User).filter(User.role == UserRole.PLAYER).order_by(User.jersey_number).all()
     return players
