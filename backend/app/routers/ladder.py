@@ -6,7 +6,7 @@ from datetime import datetime
 from ..database import get_db
 from ..models import User, LadderEntry
 from ..schemas import LadderEntryResponse
-from ..dependencies import get_current_user, get_current_manager
+from ..dependencies import get_current_manager
 from ..services.ladder_service import LadderService
 from ..scheduler import get_scheduler
 
@@ -15,8 +15,7 @@ router = APIRouter(prefix="/ladder", tags=["ladder"])
 @router.get("", response_model=List[LadderEntryResponse])
 async def get_ladder(
     limit: int = 10,
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """Get the latest ladder standings"""
     service = LadderService()
@@ -31,8 +30,7 @@ async def get_ladder(
 @router.get("/team/{team_name}", response_model=LadderEntryResponse)
 async def get_team_position(
     team_name: str,
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """Get position for a specific team"""
     service = LadderService()

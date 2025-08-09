@@ -4,17 +4,17 @@ from typing import List
 from ..database import get_db
 from ..models import Game, User
 from ..schemas import GameCreate, GameResponse
-from ..dependencies import get_current_user, get_current_manager
+from ..dependencies import get_current_manager
 
 router = APIRouter(prefix="/games", tags=["games"])
 
 @router.get("", response_model=List[GameResponse])
-async def get_games(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def get_games(db: Session = Depends(get_db)):
     games = db.query(Game).order_by(Game.date.desc()).all()
     return games
 
 @router.get("/{game_id}", response_model=GameResponse)
-async def get_game(game_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def get_game(game_id: int, db: Session = Depends(get_db)):
     game = db.query(Game).filter(Game.id == game_id).first()
     if not game:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")

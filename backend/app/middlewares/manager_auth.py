@@ -2,7 +2,7 @@ from fastapi import Request, HTTPException, status
 from fastapi.security.utils import get_authorization_scheme_param
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
-from ..models import User, UserRole
+from ..models import User
 from ..auth.auth import verify_token
 
 class ManagerAuthMiddleware:
@@ -47,12 +47,7 @@ class ManagerAuthMiddleware:
                             detail="User not found"
                         )
                     
-                    # Check if user is manager
-                    if user.role != UserRole.MANAGER:
-                        raise HTTPException(
-                            status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Manager privileges required"
-                        )
+                    # All users are now managers, so just verify they exist
                     
                     # Add user to request state
                     scope["state"] = {"current_manager": user}

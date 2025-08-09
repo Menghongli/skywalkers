@@ -1,14 +1,11 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from datetime import date
-from .models.user import UserRole
+from datetime import date, datetime
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
     name: str
-    role: UserRole
-    jersey_number: Optional[int] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -22,9 +19,6 @@ class UserResponse(BaseModel):
     id: int
     email: str
     name: str
-    role: UserRole
-    is_verified: bool
-    jersey_number: Optional[int] = 0
 
     class Config:
         from_attributes = True
@@ -52,19 +46,44 @@ class GameResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class PlayerCreate(BaseModel):
+    name: str
+    jersey_number: int
+    position: Optional[str] = None
+    height: Optional[str] = None
+    weight: Optional[float] = None
+
+class PlayerResponse(BaseModel):
+    id: int
+    name: str
+    jersey_number: int
+    position: Optional[str]
+    height: Optional[str]
+    weight: Optional[float]
+    date_joined: datetime
+    is_active: int
+    
+    class Config:
+        from_attributes = True
+
 class PlayerGameStatsCreate(BaseModel):
-    user_id: int
+    player_id: int
     game_id: int
     points: int = 0
     fouls: int = 0
 
 class PlayerGameStatsResponse(BaseModel):
     id: int
-    user_id: int
+    player_id: int
     game_id: int
     points: int
     fouls: int
-    user: UserResponse
+    is_verified: bool = False
+    verified_at: Optional[datetime] = None
+    verified_by: Optional[int] = None
+    is_scraped: bool = False
+    scrape_source: Optional[str] = None
+    player: PlayerResponse
     
     class Config:
         from_attributes = True

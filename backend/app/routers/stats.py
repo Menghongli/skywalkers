@@ -4,18 +4,18 @@ from typing import List
 from ..database import get_db
 from ..models import PlayerGameStats, User
 from ..schemas import PlayerGameStatsCreate, PlayerGameStatsResponse
-from ..dependencies import get_current_user, get_current_manager
+from ..dependencies import get_current_manager
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
 @router.get("/game/{game_id}", response_model=List[PlayerGameStatsResponse])
-async def get_game_stats(game_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def get_game_stats(game_id: int, db: Session = Depends(get_db)):
     stats = db.query(PlayerGameStats).filter(PlayerGameStats.game_id == game_id).all()
     return stats
 
-@router.get("/player/{user_id}", response_model=List[PlayerGameStatsResponse])
-async def get_player_stats(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    stats = db.query(PlayerGameStats).filter(PlayerGameStats.user_id == user_id).all()
+@router.get("/player/{player_id}", response_model=List[PlayerGameStatsResponse])
+async def get_player_stats(player_id: int, db: Session = Depends(get_db)):
+    stats = db.query(PlayerGameStats).filter(PlayerGameStats.player_id == player_id).all()
     return stats
 
 @router.post("", response_model=PlayerGameStatsResponse)
@@ -25,7 +25,7 @@ async def create_stats(
     current_user: User = Depends(get_current_manager)
 ):
     existing_stats = db.query(PlayerGameStats).filter(
-        PlayerGameStats.user_id == stats.user_id,
+        PlayerGameStats.player_id == stats.player_id,
         PlayerGameStats.game_id == stats.game_id
     ).first()
     
@@ -58,3 +58,55 @@ async def update_stats(
     db.commit()
     db.refresh(db_stats)
     return db_stats
+
+@router.get("/unverified", response_model=List[PlayerGameStatsResponse])
+async def get_unverified_stats(db: Session = Depends(get_db)):
+    """Get all unverified player stats that need manual verification"""
+    stats = db.query(PlayerGameStats).filter(
+        PlayerGameStats.is_scraped == True,
+        PlayerGameStats.is_verified == False
+    ).all()
+    return stats
+
+@router.post("/{stats_id}/verify")
+async def verify_stats(
+    stats_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_manager)
+):
+    """Manually verify scraped player stats"""
+    from datetime import datetime
+    
+    db_stats = db.query(PlayerGameStats).filter(PlayerGameStats.id == stats_id).first()
+    if not db_stats:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stats not found")
+    
+    db_stats.is_verified = True
+    db_stats.verified_at = datetime.utcnow()
+    db_stats.verified_by = current_user.id
+    
+    db.commit()
+    db.refresh(db_stats)
+    
+    return {
+        "message": "Stats verified successfully",
+        "stats": db_stats
+    }
+
+@router.post("/{stats_id}/reject")
+async def reject_stats(
+    stats_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_manager)
+):
+    """Reject and delete scraped player stats"""
+    db_stats = db.query(PlayerGameStats).filter(PlayerGameStats.id == stats_id).first()
+    if not db_stats:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stats not found")
+    
+    db.delete(db_stats)
+    db.commit()
+    
+    return {
+        "message": "Stats rejected and deleted successfully"
+    }

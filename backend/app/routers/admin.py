@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from datetime import datetime
 from typing import List
 from ..database import get_db
-from ..models import User, UserRole
+from ..models import User
 from ..schemas import UserResponse, UserCreate
 from ..auth.auth import get_password_hash
-from ..services.email import email_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -19,9 +17,8 @@ async def get_all_users(
     users = db.query(User).all()
     return users
 
-
-@router.post("/create-manager", response_model=UserResponse)
-async def create_manager(
+@router.post("/create-user", response_model=UserResponse)
+async def create_user(
     user_data: UserCreate,
     request: Request,
     db: Session = Depends(get_db)
@@ -33,33 +30,17 @@ async def create_manager(
             detail="Email already registered"
         )
     
-    verification_token = email_service.generate_verification_token()
     hashed_password = get_password_hash(user_data.password)
     
     db_user = User(
         email=user_data.email,
         password_hash=hashed_password,
-        name=user_data.name,
-        role=UserRole.MANAGER,
-        is_verified=False,
-        verification_token=verification_token,
-        verification_sent_at=datetime.utcnow(),
-        jersey_number=user_data.jersey_number if user_data.jersey_number else None
+        name=user_data.name
     )
     
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    
-    # Send verification email
-    email_sent = email_service.send_verification_email(
-        to_email=db_user.email,
-        name=db_user.name,
-        verification_token=verification_token
-    )
-    
-    if not email_sent:
-        print(f"Warning: Failed to send verification email to {db_user.email}")
     
     return db_user
 
@@ -93,22 +74,3 @@ async def delete_user(
     
     return {"message": "User deleted successfully"}
 
-@router.put("/users/{user_id}/verify")
-async def manually_verify_user(
-    user_id: int,
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
-    user.is_verified = True
-    user.verification_token = None
-    user.verification_sent_at = None
-    db.commit()
-    
-    return {"message": "User verified successfully"}
