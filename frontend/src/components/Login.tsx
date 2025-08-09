@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authAPI, LoginData } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
-interface LoginProps {
-  onSwitchToRegister: () => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
+const Login: React.FC = () => {
   const [formData, setFormData] = useState<LoginData>({
     email: '',
     password: '',
@@ -15,6 +12,7 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
   const [error, setError] = useState('');
 
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -32,16 +30,14 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
       const response = await authAPI.login(formData);
       
       // Decode user info from token (simplified - in production, get from separate endpoint)
-      const mockUser = {
-        id: 1,
-        email: formData.email,
+      const userData = {
+        id: response.user.id,
+        email: response.user.email,
         name: response.user.name,
-        role: response.user.role,
-        is_verified: response.user.is_verified,
-        jersey_number: response.user.jersey_number,
       };
       
-      login(response.access_token, mockUser);
+      login(response.access_token, userData);
+      navigate('/admin');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed');
     } finally {
@@ -83,13 +79,6 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
-
-      <p>
-        Don't have an account?{' '}
-        <button type="button" className="link-button" onClick={onSwitchToRegister}>
-          Register here
-        </button>
-      </p>
     </div>
   );
 };

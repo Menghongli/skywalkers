@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminAPI, User, RegisterData } from '../services/api';
+import { adminAPI, User, UserCreateData } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import CreateManagerModal from './CreateManagerModal';
 
@@ -39,22 +39,13 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleVerifyUser = async (userId: number) => {
+  const handleCreateUser = async (userData: UserCreateData) => {
     try {
-      await adminAPI.verifyUser(userId);
-      await fetchUsers(); // Refresh the list
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to verify user');
-    }
-  };
-
-  const handleCreateManager = async (managerData: RegisterData) => {
-    try {
-      await adminAPI.createManager(managerData);
+      await adminAPI.createUser(userData);
       setShowCreateModal(false);
       await fetchUsers(); // Refresh the list
     } catch (err: any) {
-      throw new Error(err.response?.data?.detail || 'Failed to create manager');
+      throw new Error(err.response?.data?.detail || 'Failed to create user');
     }
   };
 
@@ -67,10 +58,10 @@ const AdminPanel: React.FC = () => {
       <div className="admin-header">
         <h2>User Management</h2>
         <button 
-          className="create-manager-btn"
+          className="create-user-btn"
           onClick={() => setShowCreateModal(true)}
         >
-          Create Manager
+          Create User
         </button>
       </div>
 
@@ -83,8 +74,6 @@ const AdminPanel: React.FC = () => {
               <th>ID</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Role</th>
-              <th>Verified</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -94,25 +83,7 @@ const AdminPanel: React.FC = () => {
                 <td>{userItem.id}</td>
                 <td>{userItem.name}</td>
                 <td>{userItem.email}</td>
-                <td>
-                  <span className={`role-badge ${userItem.role}`}>
-                    {userItem.role}
-                  </span>
-                </td>
-                <td>
-                  <span className={`verification-status ${userItem.is_verified ? 'verified' : 'unverified'}`}>
-                    {userItem.is_verified ? '✓ Verified' : '✗ Unverified'}
-                  </span>
-                </td>
                 <td className="actions">
-                  {!userItem.is_verified && (
-                    <button
-                      className="verify-btn"
-                      onClick={() => handleVerifyUser(userItem.id)}
-                    >
-                      Verify
-                    </button>
-                  )}
                   {userItem.id !== user?.id && (
                     <button
                       className="delete-btn"
@@ -131,7 +102,7 @@ const AdminPanel: React.FC = () => {
       {showCreateModal && (
         <CreateManagerModal
           onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreateManager}
+          onSubmit={handleCreateUser}
         />
       )}
     </div>

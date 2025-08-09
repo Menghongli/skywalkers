@@ -21,9 +21,6 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  role: 'manager' | 'player';
-  is_verified: boolean;
-  jersey_number?: number;
 }
 
 export interface LoginData {
@@ -31,12 +28,10 @@ export interface LoginData {
   password: string;
 }
 
-export interface RegisterData {
+export interface UserCreateData {
   email: string;
   password: string;
   name: string;
-  role: 'manager' | 'player';
-  jersey_number?: number;
 }
 
 export interface AuthResponse {
@@ -50,21 +45,6 @@ export const authAPI = {
     const response = await api.post('/auth/login', data);
     return response.data;
   },
-
-  register: async (data: RegisterData): Promise<User> => {
-    const response = await api.post('/auth/register', data);
-    return response.data;
-  },
-
-  verifyEmail: async (token: string): Promise<{ message: string }> => {
-    const response = await api.post(`/auth/verify-email?token=${token}`);
-    return response.data;
-  },
-
-  resendVerification: async (email: string): Promise<{ message: string }> => {
-    const response = await api.post(`/auth/resend-verification?email=${email}`);
-    return response.data;
-  },
 };
 
 export const adminAPI = {
@@ -73,18 +53,13 @@ export const adminAPI = {
     return response.data;
   },
 
-  createManager: async (data: RegisterData): Promise<User> => {
-    const response = await api.post('/admin/create-manager', data);
+  createUser: async (data: UserCreateData): Promise<User> => {
+    const response = await api.post('/admin/create-user', data);
     return response.data;
   },
 
   deleteUser: async (userId: number): Promise<{ message: string }> => {
     const response = await api.delete(`/admin/users/${userId}`);
-    return response.data;
-  },
-
-  verifyUser: async (userId: number): Promise<{ message: string }> => {
-    const response = await api.put(`/admin/users/${userId}/verify`);
     return response.data;
   },
 };
@@ -134,11 +109,21 @@ export const gamesAPI = {
 
 export interface PlayerGameStats {
   id: number;
-  user_id: number;
+  player_id: number;
   game_id: number;
   points: number;
   fouls: number;
-  user: User;
+  is_verified: boolean;
+  verified_at?: string;
+  verified_by?: number;
+  is_scraped: boolean;
+  scrape_source?: string;
+  player: {
+    id: number;
+    name: string;
+    jersey_number: number;
+    position?: string;
+  };
 }
 
 export interface LadderEntry {
@@ -165,6 +150,31 @@ export const statsAPI = {
 
   getGameStats: async (gameId: number): Promise<PlayerGameStats[]> => {
     const response = await api.get(`/stats/game/${gameId}`);
+    return response.data;
+  },
+
+  fetchGameStats: async (url: string, cookies?: string, gameId?: number, saveToDB?: boolean): Promise<any> => {
+    const response = await api.post('/stats/fetch-game-stats', { 
+      url, 
+      cookies, 
+      game_id: gameId,
+      save_to_db: saveToDB || false
+    });
+    return response.data;
+  },
+
+  getUnverifiedStats: async (): Promise<PlayerGameStats[]> => {
+    const response = await api.get('/stats/unverified');
+    return response.data;
+  },
+
+  verifyStats: async (statsId: number): Promise<{ message: string; stats: PlayerGameStats }> => {
+    const response = await api.post(`/stats/${statsId}/verify`);
+    return response.data;
+  },
+
+  rejectStats: async (statsId: number): Promise<{ message: string }> => {
+    const response = await api.post(`/stats/${statsId}/reject`);
     return response.data;
   },
 };

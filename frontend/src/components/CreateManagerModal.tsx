@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { RegisterData } from '../services/api';
+import { UserCreateData } from '../services/api';
 
 interface CreateManagerModalProps {
   onClose: () => void;
-  onSubmit: (data: RegisterData) => Promise<void>;
+  onSubmit: (data: UserCreateData) => Promise<void>;
 }
 
 const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ onClose, onSubmit }) => {
-  const [formData, setFormData] = useState<RegisterData>({
+  const [formData, setFormData] = useState<UserCreateData>({
     email: '',
     password: '',
     name: '',
-    role: 'manager',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +38,7 @@ const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ onClose, onSubm
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>Create Manager Account</h3>
+          <h3>Create User Account</h3>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
@@ -88,7 +87,7 @@ const CreateManagerModal: React.FC<CreateManagerModalProps> = ({ onClose, onSubm
               Cancel
             </button>
             <button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Manager'}
+              {loading ? 'Creating...' : 'Create User'}
             </button>
           </div>
         </form>

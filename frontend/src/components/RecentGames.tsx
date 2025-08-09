@@ -5,13 +5,14 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface RecentGamesProps {
   onViewAll: () => void;
+  onAddFirstGame?: () => void;
 }
 
-const RecentGames: React.FC<RecentGamesProps> = ({ onViewAll }) => {
+const RecentGames: React.FC<RecentGamesProps> = ({ onViewAll, onAddFirstGame }) => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isManager } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -98,9 +99,9 @@ const RecentGames: React.FC<RecentGamesProps> = ({ onViewAll }) => {
       {games.length === 0 ? (
         <div className="no-recent-games">
           <p>No games recorded yet.</p>
-          {isManager && (
-            <button onClick={onViewAll} className="btn-primary">
-              Add First Game
+          {isAuthenticated && (
+            <button onClick={onAddFirstGame || onViewAll} className="btn-primary">
+              Add Game
             </button>
           )}
         </div>

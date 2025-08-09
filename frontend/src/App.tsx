@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
-import EmailVerification from './components/EmailVerification';
 import './App.css';
 // @ts-ignore - type resolver sometimes misses freshly added files in certain editors
 import GameDetails from './components/GameDetails';
@@ -15,19 +14,11 @@ function AppContent() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/verify-email" element={<EmailVerification />} />
-        <Route path="/" element={isAuthenticated ? <Dashboard /> : <AuthPage />} />
-        <Route path="/games" element={isAuthenticated ? <Dashboard initialTab="games" /> : <AuthPage />} />
-        <Route
-          path="/games/:id"
-          element={
-            isAuthenticated ? (
-              <Dashboard content={<GameDetails />} />
-            ) : (
-              <AuthPage />
-            )
-          }
-        />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/games" element={<Dashboard initialTab="games" />} />
+        <Route path="/games/:id" element={<Dashboard content={<GameDetails />} />} />
+        <Route path="/admin" element={isAuthenticated ? <Dashboard initialTab="admin" /> : <AuthPage />} />
+        <Route path="/login" element={<AuthPage />} />
       </Routes>
     </div>
   );

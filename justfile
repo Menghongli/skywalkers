@@ -1,5 +1,5 @@
 backend:
-    cd backend && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+    cd backend && uv run alembic upgrade head && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8001 --log-level debug
 
 frontend:
     cd frontend && npm start

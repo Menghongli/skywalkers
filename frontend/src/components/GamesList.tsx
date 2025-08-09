@@ -12,7 +12,7 @@ const GamesList: React.FC<GamesListProps> = ({ onAddGame, onEditGame }) => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isManager } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const GamesList: React.FC<GamesListProps> = ({ onAddGame, onEditGame }) => {
     <div className="games-list">
       <div className="games-header">
         <h3>Games</h3>
-        {isManager && onAddGame && (
+        {isAuthenticated && onAddGame && (
           <button onClick={onAddGame} className="btn-primary">
             Add Game
           </button>
@@ -109,7 +109,7 @@ const GamesList: React.FC<GamesListProps> = ({ onAddGame, onEditGame }) => {
                 </div>
               )}
 
-              {isManager && (
+              {isAuthenticated && (
                 <div className="game-actions">
                   {onEditGame && (
                     <button
