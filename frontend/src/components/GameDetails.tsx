@@ -15,29 +15,30 @@ const GameDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showStatsModal, setShowStatsModal] = useState(false);
 
+  const loadGameData = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const [g, s] = await Promise.all([
+        gamesAPI.getById(gameId),
+        statsAPI.getGameStats(gameId),
+      ]);
+      setGame(g);
+      setStats(s);
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'Failed to load game');
+    } finally {
+      setLoading(false);
+    }
+  }, [gameId]);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true);
-        const [g, s] = await Promise.all([
-          gamesAPI.getById(gameId),
-          statsAPI.getGameStats(gameId),
-        ]);
-        setGame(g);
-        setStats(s);
-      } catch (e: any) {
-        setError(e?.response?.data?.detail || 'Failed to load game');
-      } finally {
-        setLoading(false);
-      }
-    };
     if (!Number.isFinite(gameId)) {
       setError('Invalid game id');
       setLoading(false);
       return;
     }
-    load();
-  }, [gameId]);
+    loadGameData();
+  }, [gameId, loadGameData]);
 
   const formatScore = (sky?: number, opp?: number) => {
     if (sky === undefined || opp === undefined) return 'TBD';
@@ -109,6 +110,7 @@ const GameDetails: React.FC = () => {
       <StatsScraperModal
         isOpen={showStatsModal}
         onClose={() => setShowStatsModal(false)}
+        onSuccess={() => loadGameData()}
         gameId={gameId}
       />
     </div>

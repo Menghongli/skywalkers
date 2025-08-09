@@ -4,10 +4,11 @@ import { statsAPI, gamesAPI, Game } from '../services/api';
 interface StatsScraperModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void; // Optional callback for successful stats save
   gameId?: number; // Optional game ID for context
 }
 
-const StatsScraperModal: React.FC<StatsScraperModalProps> = ({ isOpen, onClose, gameId }) => {
+const StatsScraperModal: React.FC<StatsScraperModalProps> = ({ isOpen, onClose, onSuccess, gameId }) => {
   const [url, setUrl] = useState('');
   const [cookies, setCookies] = useState('');
   const [loading, setLoading] = useState(false);
@@ -75,8 +76,11 @@ const StatsScraperModal: React.FC<StatsScraperModalProps> = ({ isOpen, onClose, 
       const response = await statsAPI.fetchGameStats(url, cookies, gameId, true);
       setResult(response);
       
-      // Close modal after successful save
+      // Close modal after successful save and trigger refresh
       if (response.data?.saved_to_db) {
+        if (onSuccess) {
+          onSuccess(); // Trigger parent refresh
+        }
         setTimeout(() => {
           handleClose();
         }, 1000); // Brief delay to show success message

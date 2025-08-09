@@ -159,7 +159,6 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
             </div>
 
             <div className="dashboard-card">
-              <h3>Team Standings</h3>
               <Leaderboard />
             </div>
 
