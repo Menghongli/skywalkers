@@ -22,7 +22,6 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
   const [activeTab, setActiveTab] = useState<'dashboard' | 'games' | 'admin'>(initialTab);
   const [showGameModal, setShowGameModal] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
-  const [refreshGames, setRefreshGames] = useState(0);
   const [showStatsScraperModal, setShowStatsScraperModal] = useState(false);
   const [showStatsVerificationModal, setShowStatsVerificationModal] = useState(false);
   const [totalGames, setTotalGames] = useState(0);
@@ -45,7 +44,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
       let playersSet = new Set<number>();
       let playerTotals: { [playerId: number]: { name: string; points: number; fouls: number; games: Set<number> } } = {};
 
-      for (const game of games) {
+      const processGameStats = async (game: typeof games[0]) => {
         try {
           const gameStats = await statsAPI.getGameStats(game.id);
           gameStats.forEach(stat => {
@@ -68,6 +67,10 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
         } catch (error) {
           console.error(`Failed to load stats for game ${game.id}:`, error);
         }
+      };
+
+      for (const game of games) {
+        await processGameStats(game);
       }
 
       setTotalPoints(totalPointsSum);
@@ -103,7 +106,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
   };
 
   const handleGameModalSuccess = () => {
-    setRefreshGames(prev => prev + 1);
+    loadStatistics();
   };
 
   return (

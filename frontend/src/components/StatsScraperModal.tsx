@@ -16,13 +16,7 @@ const StatsScraperModal: React.FC<StatsScraperModalProps> = ({ isOpen, onClose, 
   const [result, setResult] = useState<any>(null);
   const [currentGame, setCurrentGame] = useState<Game | null>(null);
 
-  useEffect(() => {
-    if (isOpen && gameId) {
-      loadCurrentGame();
-    }
-  }, [isOpen, gameId]);
-
-  const loadCurrentGame = async () => {
+  const loadCurrentGame = React.useCallback(async () => {
     if (!gameId) return;
     
     try {
@@ -31,7 +25,13 @@ const StatsScraperModal: React.FC<StatsScraperModalProps> = ({ isOpen, onClose, 
     } catch (error) {
       console.error('Failed to load current game:', error);
     }
-  };
+  }, [gameId]);
+
+  useEffect(() => {
+    if (isOpen && gameId) {
+      loadCurrentGame();
+    }
+  }, [isOpen, gameId, loadCurrentGame]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
