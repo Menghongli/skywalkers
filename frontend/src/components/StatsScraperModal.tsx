@@ -112,7 +112,7 @@ const StatsScraperModal: React.FC<StatsScraperModalProps> = ({ isOpen, onClose, 
             <h2>Fetch Game Stats</h2>
             {currentGame && (
               <div className="game-context">
-                for {currentGame.opponent_name} - {new Date(currentGame.date).toLocaleDateString()}
+                for {currentGame.opponent_name} - {currentGame.datetime.toLocaleDateString()}
               </div>
             )}
           </div>

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Game, PlayerGameStats, gamesAPI, statsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import StatsScraperModal from './StatsScraperModal';
+import { formatGameDateTime } from '../utils/dateUtils';
 
 const GameDetails: React.FC = () => {
   const { id } = useParams();
@@ -68,7 +69,7 @@ const GameDetails: React.FC = () => {
           <h3>Game Summary</h3>
           <div className="game-summary">
             <div className="summary-left">
-              <div className="game-date">{new Date(game.date).toLocaleDateString()}</div>
+              <div className="game-datetime">{formatGameDateTime(game.datetime)}</div>
               <div className="score-display-large">{formatScore(game.final_score_skywalkers, game.final_score_opponent)}</div>
             </div>
             {game.video_url && (

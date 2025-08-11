@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from .routers import auth, games, players, stats, admin, ladder, stats_scraper
+from .routers import auth, games, players, stats, admin, ladder, stats_scraper, fixtures
 from .middlewares import ManagerAuthMiddleware
 from .scheduler import get_scheduler
 
@@ -41,6 +41,7 @@ app.include_router(players.router)
 app.include_router(stats.router)
 app.include_router(stats_scraper.router)
 app.include_router(ladder.router)
+app.include_router(fixtures.router)
 
 @app.get("/")
 async def root():

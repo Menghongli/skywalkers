@@ -4,6 +4,7 @@ import logging
 import atexit
 
 from .services.ladder_service import scheduled_ladder_update
+from .services.fixtures_service import scheduled_fixtures_update
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,24 @@ class TaskScheduler:
             max_instances=1  # Prevent overlapping runs
         )
         
+        # Schedule fixtures update every Thursday at 6:05 AM (5 minutes after ladder)
+        self.scheduler.add_job(
+            func=scheduled_fixtures_update,
+            trigger=CronTrigger(
+                day_of_week='thu',  # Thursday
+                hour=6,            # 6 AM
+                minute=5,          # 5 minutes (after ladder update)
+                timezone='Australia/Melbourne'  # Adjust timezone as needed
+            ),
+            id='fixtures_update',
+            name='Weekly Fixtures Update',
+            replace_existing=True,
+            max_instances=1  # Prevent overlapping runs
+        )
+        
         logger.info("Scheduled tasks setup completed")
         logger.info("- Ladder update: Every Thursday at 6:00 AM (Melbourne time)")
+        logger.info("- Fixtures update: Every Thursday at 6:05 AM (Melbourne time)")
     
     def trigger_ladder_update_now(self):
         """Manually trigger ladder update (for testing/admin)"""
@@ -49,6 +66,16 @@ class TaskScheduler:
         except Exception as e:
             logger.error(f"Error in manual ladder update: {e}")
             return False
+    
+    def trigger_fixtures_update_now(self):
+        """Manually trigger fixtures update (for testing/admin)"""
+        try:
+            logger.info("Manually triggering fixtures update")
+            result = scheduled_fixtures_update()
+            return result
+        except Exception as e:
+            logger.error(f"Error in manual fixtures update: {e}")
+            return {'success': False, 'message': f'Error: {str(e)}'}
     
     def get_scheduled_jobs(self):
         """Get list of all scheduled jobs"""

@@ -165,7 +165,7 @@ def scheduled_ladder_update():
             logger.info("Scheduled ladder update completed successfully")
         else:
             logger.error("Scheduled ladder update failed")
-            
+        
     except Exception as e:
         logger.error(f"Error in scheduled ladder update: {e}")
         success = False
@@ -173,5 +173,3 @@ def scheduled_ladder_update():
     finally:
         if db:
             db.close()
-        
-    return success

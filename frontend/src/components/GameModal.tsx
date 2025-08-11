@@ -10,7 +10,8 @@ interface GameModalProps {
 
 interface GameFormData {
   opponent_name: string;
-  date: string;
+  datetime: string; // HTML datetime-local formatted string
+  venue?: string;
   final_score_skywalkers?: number;
   final_score_opponent?: number;
   video_url?: string;
@@ -19,7 +20,8 @@ interface GameFormData {
 const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, onSuccess, game }) => {
   const [formData, setFormData] = useState<GameFormData>({
     opponent_name: '',
-    date: '',
+    datetime: '',
+    venue: '',
     final_score_skywalkers: undefined,
     final_score_opponent: undefined,
     video_url: '',
@@ -29,9 +31,17 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, onSuccess, game 
 
   useEffect(() => {
     if (game) {
+      const toInputValue = (dt: Date | string): string => {
+        const d = typeof dt === 'string' ? new Date(dt) : dt;
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+          .toISOString()
+          .slice(0, 16);
+      };
+
       setFormData({
         opponent_name: game.opponent_name,
-        date: game.date,
+        datetime: toInputValue(game.datetime as any),
+        venue: game.venue || '',
         final_score_skywalkers: game.final_score_skywalkers,
         final_score_opponent: game.final_score_opponent,
         video_url: game.video_url || '',
@@ -39,7 +49,8 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, onSuccess, game 
     } else {
       setFormData({
         opponent_name: '',
-        date: '',
+        datetime: '',
+        venue: '',
         final_score_skywalkers: undefined,
         final_score_opponent: undefined,
         video_url: '',
@@ -51,8 +62,8 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, onSuccess, game 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.opponent_name.trim() || !formData.date) {
-      setError('Opponent name and date are required');
+    if (!formData.opponent_name.trim() || !formData.datetime) {
+      setError('Opponent name and date/time are required');
       return;
     }
 
@@ -60,9 +71,15 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, onSuccess, game 
       setLoading(true);
       setError(null);
 
+      // Convert datetime-local to ISO string while preserving local timezone
+      const localDate = new Date(formData.datetime);
+      const timezoneOffset = localDate.getTimezoneOffset() * 60000;
+      const localDateTime = new Date(localDate.getTime() - timezoneOffset);
+
       const submitData: GameCreate = {
         opponent_name: formData.opponent_name,
-        date: formData.date,
+        datetime: localDateTime.toISOString(),
+        venue: formData.venue || undefined,
         final_score_skywalkers: formData.final_score_skywalkers || undefined,
         final_score_opponent: formData.final_score_opponent || undefined,
       };
@@ -123,14 +140,26 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, onSuccess, game 
           </div>
 
           <div className="form-group">
-            <label htmlFor="date">Game Date *</label>
+            <label htmlFor="datetime">Game Date Time *</label>
             <input
-              type="date"
-              id="date"
-              name="date"
-              value={formData.date}
+              type="datetime-local"
+              id="datetime"
+              name="datetime"
+              value={formData.datetime}
               onChange={handleChange}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="venue">Venue</label>
+            <input
+              type="text"
+              id="venue"
+              name="venue"
+              value={formData.venue}
+              onChange={handleChange}
+              placeholder="Enter venue (e.g., WAV4, TBD)"
             />
           </div>
 

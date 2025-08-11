@@ -1,43 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Game, gamesAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useGames } from '../contexts/GamesContext';
+import { formatGameDateTime } from '../utils/dateUtils';
+
+type GameFilter = 'recent' | 'upcoming';
 
 interface GamesListProps {
+  filter?: GameFilter;
   onAddGame?: () => void;
   onEditGame?: (game: Game) => void;
 }
 
-const GamesList: React.FC<GamesListProps> = ({ onAddGame, onEditGame }) => {
-  const [games, setGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const GamesList: React.FC<GamesListProps> = ({ filter = 'recent', onAddGame, onEditGame }) => {
+  const { games: allGames, recentGames, upcomingGames, loading, error, refreshGames } = useGames();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
-    try {
-      setLoading(true);
-      const data = await gamesAPI.getAll();
-      setGames(data);
-    } catch (err) {
-      setError('Failed to load games');
-      console.error('Error fetching games:', err);
-    } finally {
-      setLoading(false);
+  // Apply filter based on the current filter setting
+  const games = React.useMemo(() => {
+    if (filter === 'recent') {
+      return recentGames;
+    } else if (filter === 'upcoming') {
+      return upcomingGames;
     }
-  };
+    // 'all' filter shows all games in default order
+    return allGames;
+  }, [filter, allGames, recentGames, upcomingGames]);
 
   const handleDelete = async (gameId: number) => {
     if (!window.confirm('Are you sure you want to delete this game?')) return;
     
     try {
       await gamesAPI.delete(gameId);
-      setGames(games.filter(game => game.id !== gameId));
+      refreshGames();
     } catch (err) {
       console.error('Error deleting game:', err);
       alert('Failed to delete game');
@@ -84,7 +81,7 @@ const GamesList: React.FC<GamesListProps> = ({ onAddGame, onEditGame }) => {
             >
               <div className="game-header">
                 <div className="game-opponent">vs {game.opponent_name}</div>
-                <div className="game-date">{new Date(game.date).toLocaleDateString()}</div>
+                <div className="game-datetime">{formatGameDateTime(game.datetime)}</div>
               </div>
               
               <div className="game-score">

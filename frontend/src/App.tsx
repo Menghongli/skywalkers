@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { GamesProvider } from './contexts/GamesContext';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import './App.css';
@@ -29,7 +30,9 @@ function App() {
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <AppContent />
+          <GamesProvider>
+            <AppContent />
+          </GamesProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>

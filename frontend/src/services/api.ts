@@ -67,7 +67,9 @@ export const adminAPI = {
 export interface Game {
   id: number;
   opponent_name: string;
-  date: string;
+  datetime: Date;
+  time?: string; // ISO datetime string from backend
+  venue?: string;
   final_score_skywalkers?: number;
   final_score_opponent?: number;
   video_url?: string;
@@ -75,7 +77,8 @@ export interface Game {
 
 export interface GameCreate {
   opponent_name: string;
-  date: string;
+  datetime: string; // ISO string
+  venue?: string;
   final_score_skywalkers?: number;
   final_score_opponent?: number;
 }
@@ -83,12 +86,24 @@ export interface GameCreate {
 export const gamesAPI = {
   getAll: async (): Promise<Game[]> => {
     const response = await api.get('/games');
-    return response.data;
+    const games = (response.data as any[]).map((g) => ({
+      ...g,
+      datetime: new Date(g.datetime),
+      final_score_skywalkers: g.final_score_skywalkers ?? undefined,
+      final_score_opponent: g.final_score_opponent ?? undefined,
+    }));
+    return games as Game[];
   },
 
   getById: async (id: number): Promise<Game> => {
     const response = await api.get(`/games/${id}`);
-    return response.data;
+    const g = response.data;
+    return {
+      ...g,
+      datetime: new Date(g.datetime),
+      final_score_skywalkers: g.final_score_skywalkers ?? undefined,
+      final_score_opponent: g.final_score_opponent ?? undefined,
+    } as Game;
   },
 
   create: async (data: GameCreate): Promise<Game> => {
@@ -192,6 +207,56 @@ export const ladderAPI = {
 
   updateLadder: async (url?: string): Promise<{ message: string }> => {
     const response = await api.post('/ladder/update', url ? { url } : {});
+    return response.data;
+  },
+};
+
+export interface FixtureData {
+  id: number;
+  opponent_name: string;
+  date: string;
+  is_today: boolean;
+  days_until: number;
+  has_scores: boolean;
+}
+
+export interface FixturesResponse {
+  fixtures: FixtureData[];
+  count: number;
+}
+
+export interface FixturesUpdateResponse {
+  success: boolean;
+  message: string;
+  created: number;
+  updated: number;
+  skipped: number;
+  total_processed?: number;
+}
+
+export const fixturesAPI = {
+  getFixtures: async (limit: number = 10): Promise<FixturesResponse> => {
+    const response = await api.get(`/fixtures?limit=${limit}`);
+    return response.data;
+  },
+
+  updateFixtures: async (url?: string): Promise<{ message: string }> => {
+    const response = await api.post('/fixtures/update', url ? { url } : {});
+    return response.data;
+  },
+
+  getFixturesStatus: async (): Promise<{
+    upcoming_count: number;
+    today_count: number;
+    this_week_count: number;
+    last_checked: string;
+  }> => {
+    const response = await api.get('/fixtures/status');
+    return response.data;
+  },
+
+  syncFixturesWithGames: async (): Promise<{ message: string }> => {
+    const response = await api.post('/fixtures/sync-with-games');
     return response.data;
   },
 };

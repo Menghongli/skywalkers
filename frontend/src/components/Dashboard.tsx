@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useGames } from '../contexts/GamesContext';
 import AdminPanel from './AdminPanel';
 import GamesPanel from './GamesPanel';
 import RecentGames from './RecentGames';
+import UpcomingGames from './UpcomingGames';
 import Leaderboard from './Leaderboard';
 import ThemeToggle from './ThemeToggle';
 import GameModal from './GameModal';
 import StatsScraperModal from './StatsScraperModal';
 import StatsVerificationModal from './StatsVerificationModal';
-import { Game, gamesAPI, statsAPI } from '../services/api';
+import { Game, statsAPI, PlayerGameStats } from '../services/api';
 
 interface DashboardProps {
   initialTab?: 'dashboard' | 'games' | 'admin';
@@ -18,81 +20,94 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content }) => {
   const { user, logout, isAuthenticated } = useAuth();
+  const { recentGames, refreshGames } = useGames();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'games' | 'admin'>(initialTab);
   const [showGameModal, setShowGameModal] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [showStatsScraperModal, setShowStatsScraperModal] = useState(false);
   const [showStatsVerificationModal, setShowStatsVerificationModal] = useState(false);
-  const [totalGames, setTotalGames] = useState(0);
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [activePlayers, setActivePlayers] = useState(0);
+
+  // Get stats from completed games only
+  const totalGames = recentGames.length; // Only count completed games
+  
+  // Calculate total team points from completed games
+  const totalPoints = recentGames.reduce((sum, game) => {
+    return sum + (game.final_score_skywalkers || 0);
+  }, 0);
+  
   const [playerStats, setPlayerStats] = useState<Array<{name: string, points: number, fouls: number, avgPoints: number, avgFouls: number}>>([]);
+  const [statsLoading, setStatsLoading] = useState(false);
+  
+  // Calculate active players from loaded stats
+  const activePlayers = playerStats.length;
 
+  // Load player statistics from all completed games
   useEffect(() => {
-    loadStatistics();
-  }, []);
-
-  const loadStatistics = async () => {
-    try {
-      // Get total games
-      const games = await gamesAPI.getAll();
-      setTotalGames(games.length);
-
-      // Calculate statistics across all games
-      let totalPointsSum = 0;
-      let playersSet = new Set<number>();
-      let playerTotals: { [playerId: number]: { name: string; points: number; fouls: number; games: Set<number> } } = {};
-
-      const processGameStats = async (game: typeof games[0]) => {
-        try {
-          const gameStats = await statsAPI.getGameStats(game.id);
-          gameStats.forEach(stat => {
-            totalPointsSum += stat.points;
-            playersSet.add(stat.player_id);
-            
-            // Track player totals
-            if (!playerTotals[stat.player_id]) {
-              playerTotals[stat.player_id] = {
-                name: stat.player?.name || 'Unknown',
-                points: 0,
-                fouls: 0,
-                games: new Set()
-              };
-            }
-            playerTotals[stat.player_id].points += stat.points;
-            playerTotals[stat.player_id].fouls += stat.fouls;
-            playerTotals[stat.player_id].games.add(game.id);
-          });
-        } catch (error) {
-          console.error(`Failed to load stats for game ${game.id}:`, error);
-        }
-      };
-
-      for (const game of games) {
-        await processGameStats(game);
+    const loadPlayerStats = async () => {
+      if (recentGames.length === 0) {
+        setPlayerStats([]);
+        return;
       }
 
-      setTotalPoints(totalPointsSum);
-      setActivePlayers(playersSet.size);
-      
-      // Convert player totals to array and sort by points
-      const playerStatsArray = Object.values(playerTotals).map(player => {
-        const gamesCount = player.games.size;
-        return {
-          name: player.name,
-          points: player.points,
-          fouls: player.fouls,
-          avgPoints: gamesCount > 0 ? Math.round((player.points / gamesCount) * 10) / 10 : 0,
-          avgFouls: gamesCount > 0 ? Math.round((player.fouls / gamesCount) * 10) / 10 : 0
-        };
-      }).sort((a, b) => b.points - a.points);
-      
-      setPlayerStats(playerStatsArray);
-    } catch (error) {
-      console.error('Failed to load statistics:', error);
-    }
-  };
+      setStatsLoading(true);
+      try {
+        // Collect all stats from all completed games
+        const allGameStats: PlayerGameStats[] = [];
+        
+        for (const game of recentGames) {
+          try {
+            const gameStats = await statsAPI.getGameStats(game.id);
+            allGameStats.push(...gameStats);
+          } catch (error) {
+            console.error(`Failed to load stats for game ${game.id}:`, error);
+          }
+        }
+
+        // Aggregate stats by player
+        const playerTotals: { [playerId: number]: { 
+          name: string; 
+          points: number; 
+          fouls: number; 
+          gamesCount: number; 
+        } } = {};
+
+        allGameStats.forEach(stat => {
+          if (!playerTotals[stat.player_id]) {
+            playerTotals[stat.player_id] = {
+              name: stat.player?.name || 'Unknown',
+              points: 0,
+              fouls: 0,
+              gamesCount: 0,
+            };
+          }
+          playerTotals[stat.player_id].points += stat.points;
+          playerTotals[stat.player_id].fouls += stat.fouls;
+          playerTotals[stat.player_id].gamesCount += 1;
+        });
+
+        // Convert to display format and calculate averages
+        const playerStatsArray = Object.values(playerTotals)
+          .map(player => ({
+            name: player.name,
+            points: player.points,
+            fouls: player.fouls,
+            avgPoints: player.gamesCount > 0 ? Math.round((player.points / player.gamesCount) * 10) / 10 : 0,
+            avgFouls: player.gamesCount > 0 ? Math.round((player.fouls / player.gamesCount) * 10) / 10 : 0,
+          }))
+          .sort((a, b) => b.points - a.points); // Sort by total points descending
+
+        setPlayerStats(playerStatsArray);
+      } catch (error) {
+        console.error('Failed to load player statistics:', error);
+        setPlayerStats([]);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    loadPlayerStats();
+  }, [recentGames]);
 
   const handleAddFirstGame = () => {
     setEditingGame(null);
@@ -106,7 +121,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
   };
 
   const handleGameModalSuccess = () => {
-    loadStatistics();
+    refreshGames(); // Refresh games data instead of loading stats
   };
 
   return (
@@ -159,6 +174,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
             </div>
 
             <div className="dashboard-card">
+              <h3>Upcoming Games</h3>
+              <UpcomingGames 
+                onViewAll={() => setActiveTab('games')}
+                onAddFirstGame={handleAddFirstGame}
+              />
+            </div>
+
+            <div className="dashboard-card">
               <Leaderboard />
             </div>
 
@@ -181,7 +204,9 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
                 </div>
                 
                 <div className="player-stats-table">
-                  {playerStats.length === 0 ? (
+                  {statsLoading ? (
+                    <div className="no-player-stats">Loading player statistics...</div>
+                  ) : playerStats.length === 0 ? (
                     <div className="no-player-stats">No player statistics available</div>
                   ) : (
                     <>

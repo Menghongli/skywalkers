@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Game } from '../services/api';
 import GamesList from './GamesList';
 import GameModal from './GameModal';
 
+type GameTab = 'recent' | 'upcoming';
+
 const GamesPanel: React.FC = () => {
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<GameTab>('recent');
   const [showModal, setShowModal] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Check URL params to set initial tab
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'upcoming' || tabParam === 'recent') {
+      setActiveTab(tabParam as GameTab);
+    }
+  }, [location.search]);
 
   const handleAddGame = () => {
     setEditingGame(null);
@@ -29,8 +43,24 @@ const GamesPanel: React.FC = () => {
 
   return (
     <div className="games-panel">
+      <div className="games-tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'recent' ? 'active' : ''}`}
+          onClick={() => setActiveTab('recent')}
+        >
+          Recent Games
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`}
+          onClick={() => setActiveTab('upcoming')}
+        >
+          Upcoming Games
+        </button>
+      </div>
+
       <GamesList
-        key={refreshKey}
+        key={`${refreshKey}-${activeTab}`}
+        filter={activeTab}
         onAddGame={handleAddGame}
         onEditGame={handleEditGame}
       />

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Game, gamesAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useGames } from '../contexts/GamesContext';
+import { formatGameDateTime } from '../utils/dateUtils';
 
 interface RecentGamesProps {
   onViewAll: () => void;
@@ -9,30 +10,12 @@ interface RecentGamesProps {
 }
 
 const RecentGames: React.FC<RecentGamesProps> = ({ onViewAll, onAddFirstGame }) => {
-  const [games, setGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { recentGames: allRecentGames, loading, error } = useGames();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchRecentGames();
-  }, []);
-
-  const fetchRecentGames = async () => {
-    try {
-      setLoading(true);
-      const allGames = await gamesAPI.getAll();
-      // Get the 5 most recent games
-      const recentGames = allGames.slice(0, 5);
-      setGames(recentGames);
-    } catch (err) {
-      setError('Failed to load recent games');
-      console.error('Error fetching recent games:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Get the 5 most recent games for dashboard widget
+  const games = allRecentGames.slice(0, 5);
 
   const calculateStats = () => {
     const gamesWithScores = games.filter(
@@ -115,8 +98,16 @@ const RecentGames: React.FC<RecentGamesProps> = ({ onViewAll, onAddFirstGame }) 
                 onClick={() => navigate(`/games/${game.id}`)}
               >
                 <div className="game-info">
-                  <div className="opponent">vs {game.opponent_name}</div>
-                  <div className="game-date">{new Date(game.date).toLocaleDateString()}</div>
+                  <div className="opponent">{game.opponent_name}</div>
+                  <div className="game-details">
+                    <span className="game-date">{formatGameDateTime(game.datetime)}</span>
+                    {game.venue && (
+                      <>
+                        <span className="venue-separator"> • </span>
+                        <span className="game-venue">{game.venue}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="game-score">
                   <span className="score">{formatScore(game.final_score_skywalkers, game.final_score_opponent)}</span>
@@ -127,9 +118,9 @@ const RecentGames: React.FC<RecentGamesProps> = ({ onViewAll, onAddFirstGame }) 
               </div>
             ))}
           </div>
-          
-          <button onClick={onViewAll} className="btn-primary view-all-btn">
-            View All Games
+            
+          <button onClick={() => { onViewAll(); navigate('/games?tab=recent'); }} className="btn-primary view-all-btn">
+            View All Recent Games
           </button>
         </>
       )}

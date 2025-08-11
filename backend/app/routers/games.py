@@ -10,7 +10,7 @@ router = APIRouter(prefix="/games", tags=["games"])
 
 @router.get("", response_model=List[GameResponse])
 async def get_games(db: Session = Depends(get_db)):
-    games = db.query(Game).order_by(Game.date.desc()).all()
+    games = db.query(Game).order_by(Game.datetime.desc()).all()
     return games
 
 @router.get("/{game_id}", response_model=GameResponse)

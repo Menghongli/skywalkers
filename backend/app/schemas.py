@@ -31,14 +31,16 @@ class LoginResponse(BaseModel):
 
 class GameCreate(BaseModel):
     opponent_name: str
-    date: date
+    datetime: datetime
+    venue: Optional[str] = None
     final_score_skywalkers: Optional[int] = None
     final_score_opponent: Optional[int] = None
 
 class GameResponse(BaseModel):
     id: int
     opponent_name: str
-    date: date
+    datetime: datetime
+    venue: Optional[str]
     final_score_skywalkers: Optional[int]
     final_score_opponent: Optional[int]
     video_url: Optional[str]

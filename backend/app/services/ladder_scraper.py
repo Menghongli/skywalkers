@@ -233,7 +233,7 @@ def display_ladder():
         else:
             print("❌ No ladder data found")
             
-        return data
+        return 0
     except Exception as e:
         print(f"❌ Error fetching ladder: {e}")
-        return []
+        return 1

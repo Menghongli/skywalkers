@@ -22,8 +22,9 @@ dependencies = [
 ]
 
 [project.scripts]
-ladder = "app.services.ladder_scraper:display_ladder"
+fetch-ladder = "app.services.ladder_scraper:display_ladder"
 update-ladder = "app.services.ladder_service:scheduled_ladder_update"
+fetch-fixtures = "app.services.fixtures_scraper:display_fixtures"
 
 [tool.uv]
 package = true
