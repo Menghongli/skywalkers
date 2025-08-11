@@ -92,11 +92,39 @@ def upgrade() -> None:
                 FROM games
             ''')
         
+        # Temporarily drop foreign key constraints before dropping games table
+        # Find all tables that have foreign keys pointing to games table
+        all_tables = inspector.get_table_names()
+        dropped_fks = []
+        
+        for table_name in all_tables:
+            if table_name in ['games', 'games_new']:
+                continue
+            try:
+                foreign_keys = inspector.get_foreign_keys(table_name)
+                for fk in foreign_keys:
+                    if fk['referred_table'] == 'games':
+                        dropped_fks.append((table_name, fk))
+                        op.drop_constraint(fk['name'], table_name, type_='foreignkey')
+            except Exception as e:
+                # If we can't inspect foreign keys for a table, skip it
+                print(f"Warning: Could not inspect foreign keys for table {table_name}: {e}")
+        
         # Drop old table
         op.drop_table('games')
         
         # Rename new table to original name
         op.rename_table('games_new', 'games')
+        
+        # Recreate all the foreign key constraints
+        for table_name, fk in dropped_fks:
+            op.create_foreign_key(
+                fk['name'],
+                table_name, 
+                'games',
+                fk['constrained_columns'], 
+                fk['referred_columns']
+            )
 
 
 def downgrade() -> None:
@@ -163,8 +191,36 @@ def downgrade() -> None:
             FROM games
         ''')
         
+        # Temporarily drop foreign key constraints before dropping games table
+        # Find all tables that have foreign keys pointing to games table
+        all_tables = inspector.get_table_names()
+        dropped_fks = []
+        
+        for table_name in all_tables:
+            if table_name in ['games', 'games_new']:
+                continue
+            try:
+                foreign_keys = inspector.get_foreign_keys(table_name)
+                for fk in foreign_keys:
+                    if fk['referred_table'] == 'games':
+                        dropped_fks.append((table_name, fk))
+                        op.drop_constraint(fk['name'], table_name, type_='foreignkey')
+            except Exception as e:
+                # If we can't inspect foreign keys for a table, skip it
+                print(f"Warning: Could not inspect foreign keys for table {table_name}: {e}")
+        
         # Drop old table
         op.drop_table('games')
         
         # Rename new table to original name
         op.rename_table('games_new', 'games')
+        
+        # Recreate all the foreign key constraints
+        for table_name, fk in dropped_fks:
+            op.create_foreign_key(
+                fk['name'],
+                table_name, 
+                'games',
+                fk['constrained_columns'], 
+                fk['referred_columns']
+            )

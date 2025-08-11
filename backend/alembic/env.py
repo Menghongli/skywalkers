@@ -28,7 +28,7 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Set the database URL from environment variable
-database_url = os.getenv("DATABASE_PUBLIC_URL", "sqlite:///./skywalkers.db")
+database_url = os.getenv("DATABASE_PUBLIC_URL", "postgresql://skywalkers:skywalkers123@localhost:5432/skywalkers")
 config.set_main_option("sqlalchemy.url", database_url)
 
 # other values from the config, defined by the needs of env.py,
