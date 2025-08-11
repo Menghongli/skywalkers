@@ -128,7 +128,10 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="header-left">
-          <h1>🏀 Skywalkers Dashboard</h1>
+          <div className="header-logo-title">
+            <img src="/skywalkers-logo.png" alt="Skywalkers Logo" className="nav-logo" />
+            <h1>Skywalkers Dashboard</h1>
+          </div>
           <nav className="dashboard-nav">
             <button 
               className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}

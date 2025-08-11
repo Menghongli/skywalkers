@@ -1,5 +1,9 @@
 # Skywalkers Basketball Tracker 🏀
 
+<div align="center">
+  <img src="skywalkers.png" alt="Skywalkers Logo" width="200" height="200">
+</div>
+
 A web application for tracking basketball games and player statistics for the Skywalkers team.
 
 ## Features

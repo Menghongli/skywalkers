@@ -60,6 +60,19 @@
   gap: 30px;
 }
 
+.header-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-logo {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
 .dashboard-nav {
   display: flex;
   gap: 10px;
