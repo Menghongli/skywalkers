@@ -36,9 +36,9 @@ A web application for tracking basketball games and player statistics for the Sk
 - **Video Player**: Custom component with multi-format support
 
 ### Database
-- **Development**: SQLite for local development
-- **Production**: PostgreSQL for scalable production deployment
-- **Containerization**: Docker Compose for local PostgreSQL setup
+- **Primary Database**: PostgreSQL for both development and production
+- **Local Development**: Docker Compose for PostgreSQL container setup
+- **Production**: Managed PostgreSQL on Railway platform
 
 ### Deployment & DevOps
 - **Backend Hosting**: Railway with automatic deployments
@@ -91,8 +91,8 @@ just db-reset         # Reset database with fresh data
 just db-logs          # View database logs
 
 # Backend
-just backend-dev      # Start backend with PostgreSQL
-just dev             # Start backend development server (SQLite)
+just backend-dev      # Start backend with PostgreSQL (recommended)
+just dev             # Start backend development server (legacy SQLite fallback)
 just install         # Install backend dependencies
 just clean           # Clean backend cache files
 
@@ -101,64 +101,6 @@ just frontend-dev      # Start frontend development server
 just frontend-build    # Build frontend for production
 just frontend-install  # Install frontend dependencies
 ```
-
-## API Endpoints
-
-### Authentication
-- `POST /auth/register` - Register new user (manager/player)
-- `POST /auth/login` - Login user
-
-### Games
-- `GET /games` - List all games
-- `GET /games/{id}` - Get game details with video support
-- `POST /games` - Create new game with video URL (manager only)
-- `PUT /games/{id}` - Update game including video URL (manager only)
-- `DELETE /games/{id}` - Delete game (manager only)
-
-### Players
-- `GET /players` - List all players
-- `GET /players/{id}` - Get player details
-
-### Statistics
-- `GET /stats/game/{game_id}` - Get stats for a game
-- `GET /stats/player/{player_id}` - Get stats for a player
-- `POST /stats` - Create player game stats (manager only)
-- `PUT /stats/{id}` - Update player game stats (manager only)
-- `POST /stats/fetch-game-stats` - Scrape stats from external URLs
-- `GET /stats/unverified` - Get unverified scraped stats
-- `POST /stats/{id}/verify` - Verify scraped stats
-- `POST /stats/{id}/reject` - Reject scraped stats
-
-### Ladder
-- `GET /ladder` - Get current league standings
-- `GET /ladder/team/{name}` - Get specific team position
-- `POST /ladder/update` - Update ladder data from external source
-
-### Fixtures
-- `GET /fixtures` - Get upcoming fixtures
-- `POST /fixtures/update` - Update fixtures from external source
-- `GET /fixtures/status` - Get fixtures status summary
-- `POST /fixtures/sync-with-games` - Sync fixtures with games
-
-## Database Models
-
-### User
-- Email, password, name for authentication and user management
-
-### Player  
-- User reference, jersey number, position, height, weight, active status
-
-### Game
-- Opponent name, datetime, venue, final scores (Skywalkers/opponent), video URL
-
-### PlayerGameStats
-- Player reference, game reference, points, fouls, verification status, scrape metadata
-
-### LadderEntry
-- Team name, position, wins/draws/losses, points for/against, win percentage, season/division
-
-### Fixture
-- Opponent name, date, venue, score status, days until game
 
 ## Deployment
 
@@ -181,7 +123,8 @@ just frontend-install  # Install frontend dependencies
 ### Backend (.env)
 ```env
 SECRET_KEY=your-secret-key-here
-DATABASE_URL=sqlite:///./skywalkers.db  # or PostgreSQL URL for production
+DATABASE_URL=postgresql://user:password@localhost:5432/skywalkers  # Local PostgreSQL
+# For production, Railway auto-provides DATABASE_URL
 ```
 
 ## Contributing
