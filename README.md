@@ -8,11 +8,14 @@ A web application for tracking basketball games and player statistics for the Sk
 
 ## Features
 
-- **Game Management**: Schedule games, record scores against opponents, and upload game videos
+- **Game Management**: Schedule games, record scores against opponents, and add video recordings
+- **Video Player**: Integrated video player supporting YouTube links, direct video files (MP4, WebM, OGG), and external links
 - **Player Roster**: Manage team roster with jersey numbers and player profiles  
-- **Statistics Tracking**: Record basic player stats (points and fouls) for each game
+- **Statistics Tracking**: Record basic player stats (points and fouls) for each game with automated scraping capability
+- **Ladder Integration**: Real-time league standings and position tracking
+- **Fixtures Management**: Automated fixture updates and game scheduling
 - **Role-Based Access**: Team managers have full edit permissions, players have read-only access
-- **Video Storage**: Upload and view game recordings
+- **Modern UI**: Clean, responsive design with dark/light theme support and custom branding
 
 ## Tech Stack
 
@@ -59,12 +62,17 @@ A web application for tracking basketball games and player statistics for the Sk
 ### Available Commands
 
 ```bash
+# Database
+just db-start         # Start PostgreSQL Docker container
+just db-stop          # Stop PostgreSQL container
+just db-reset         # Reset database with fresh data
+just db-logs          # View database logs
+
 # Backend
-just dev          # Start backend development server
-just start        # Start backend production server
-just install      # Install backend dependencies
-just test         # Run backend tests
-just clean        # Clean backend cache files
+just backend-dev      # Start backend with PostgreSQL
+just dev             # Start backend development server (SQLite)
+just install         # Install backend dependencies
+just clean           # Clean backend cache files
 
 # Frontend  
 just frontend-dev      # Start frontend development server
@@ -80,8 +88,9 @@ just frontend-install  # Install frontend dependencies
 
 ### Games
 - `GET /games` - List all games
-- `POST /games` - Create new game (manager only)
-- `PUT /games/{id}` - Update game (manager only)
+- `GET /games/{id}` - Get game details with video support
+- `POST /games` - Create new game with video URL (manager only)
+- `PUT /games/{id}` - Update game including video URL (manager only)
 - `DELETE /games/{id}` - Delete game (manager only)
 
 ### Players
@@ -93,20 +102,41 @@ just frontend-install  # Install frontend dependencies
 - `GET /stats/player/{player_id}` - Get stats for a player
 - `POST /stats` - Create player game stats (manager only)
 - `PUT /stats/{id}` - Update player game stats (manager only)
+- `POST /stats/fetch-game-stats` - Scrape stats from external URLs
+- `GET /stats/unverified` - Get unverified scraped stats
+- `POST /stats/{id}/verify` - Verify scraped stats
+- `POST /stats/{id}/reject` - Reject scraped stats
+
+### Ladder
+- `GET /ladder` - Get current league standings
+- `GET /ladder/team/{name}` - Get specific team position
+- `POST /ladder/update` - Update ladder data from external source
+
+### Fixtures
+- `GET /fixtures` - Get upcoming fixtures
+- `POST /fixtures/update` - Update fixtures from external source
+- `GET /fixtures/status` - Get fixtures status summary
+- `POST /fixtures/sync-with-games` - Sync fixtures with games
 
 ## Database Models
 
 ### User
-- Email, password, name, role (manager/player)
+- Email, password, name for authentication and user management
 
-### Player
-- User reference, jersey number
+### Player  
+- User reference, jersey number, position, height, weight, active status
 
 ### Game
-- Opponent name, date, scores, video URL
+- Opponent name, datetime, venue, final scores (Skywalkers/opponent), video URL
 
 ### PlayerGameStats
-- Player reference, game reference, points, fouls
+- Player reference, game reference, points, fouls, verification status, scrape metadata
+
+### LadderEntry
+- Team name, position, wins/draws/losses, points for/against, win percentage, season/division
+
+### Fixture
+- Opponent name, date, venue, score status, days until game
 
 ## Deployment
 
