@@ -19,10 +19,32 @@ A web application for tracking basketball games and player statistics for the Sk
 
 ## Tech Stack
 
-- **Backend**: FastAPI with SQLAlchemy, JWT authentication, uv for dependency management
-- **Frontend**: React with TypeScript
-- **Database**: SQLite (development) / PostgreSQL (production)
-- **Deployment**: Railway (backend) + Vercel (frontend)
+### Backend
+- **Framework**: FastAPI with async support
+- **Database**: SQLAlchemy ORM with Alembic migrations
+- **Authentication**: JWT tokens with secure password hashing
+- **Package Management**: uv for fast Python dependency management
+- **Web Scraping**: BeautifulSoup4 + Requests for external data integration
+- **Task Scheduling**: APScheduler for automated data updates
+
+### Frontend
+- **Framework**: React 18 with TypeScript
+- **Routing**: React Router for navigation
+- **State Management**: Context API for global state
+- **Styling**: CSS-in-JS with CSS variables for theming
+- **HTTP Client**: Axios with interceptors for API communication
+- **Video Player**: Custom component with multi-format support
+
+### Database
+- **Development**: SQLite for local development
+- **Production**: PostgreSQL for scalable production deployment
+- **Containerization**: Docker Compose for local PostgreSQL setup
+
+### Deployment & DevOps
+- **Backend Hosting**: Railway with automatic deployments
+- **Frontend Hosting**: Vercel with continuous deployment
+- **Task Runner**: Just for development workflow automation
+- **Version Control**: Git with conventional commits
 
 ## Quick Start
 
