@@ -82,6 +82,7 @@ const GameModal: React.FC<GameModalProps> = ({ isOpen, onClose, onSuccess, game 
         venue: formData.venue || undefined,
         final_score_skywalkers: formData.final_score_skywalkers || undefined,
         final_score_opponent: formData.final_score_opponent || undefined,
+        video_url: formData.video_url || undefined,
       };
 
       if (game) {

@@ -81,6 +81,7 @@ export interface GameCreate {
   venue?: string;
   final_score_skywalkers?: number;
   final_score_opponent?: number;
+  video_url?: string;
 }
 
 export const gamesAPI = {
@@ -91,6 +92,7 @@ export const gamesAPI = {
       datetime: new Date(g.datetime),
       final_score_skywalkers: g.final_score_skywalkers ?? undefined,
       final_score_opponent: g.final_score_opponent ?? undefined,
+      video_url: g.video_url ?? undefined,
     }));
     return games as Game[];
   },
@@ -103,6 +105,7 @@ export const gamesAPI = {
       datetime: new Date(g.datetime),
       final_score_skywalkers: g.final_score_skywalkers ?? undefined,
       final_score_opponent: g.final_score_opponent ?? undefined,
+      video_url: g.video_url ?? undefined,
     } as Game;
   },
 

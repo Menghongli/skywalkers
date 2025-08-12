@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { Game, PlayerGameStats, gamesAPI, statsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import StatsScraperModal from './StatsScraperModal';
+import GameModal from './GameModal';
+import VideoPlayer from './VideoPlayer';
 import { formatGameDateTime } from '../utils/dateUtils';
 
 const GameDetails: React.FC = () => {
@@ -15,6 +17,7 @@ const GameDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showGameModal, setShowGameModal] = useState(false);
 
   const loadGameData = React.useCallback(async () => {
     try {
@@ -46,6 +49,14 @@ const GameDetails: React.FC = () => {
     return `${sky} - ${opp}`;
   };
 
+  const handleGameModalClose = () => {
+    setShowGameModal(false);
+  };
+
+  const handleGameModalSuccess = () => {
+    loadGameData(); // Reload game data after successful edit
+  };
+
   if (loading) return <div className="loading">Loading game...</div>;
   if (error) return <div className="error-message">{error}</div>;
   if (!game) return <div className="error-message">Game not found</div>;
@@ -58,9 +69,14 @@ const GameDetails: React.FC = () => {
           <h3>Game vs {game.opponent_name}</h3>
         </div>
         {isAuthenticated && (
-          <button onClick={() => setShowStatsModal(true)} className="btn-secondary">
-            Fetch Stats
-          </button>
+          <div className="games-actions">
+            <button onClick={() => setShowGameModal(true)} className="btn-primary">
+              Edit Game
+            </button>
+            <button onClick={() => setShowStatsModal(true)} className="btn-secondary">
+              Fetch Stats
+            </button>
+          </div>
         )}
       </div>
 
@@ -72,12 +88,13 @@ const GameDetails: React.FC = () => {
               <div className="game-datetime">{formatGameDateTime(game.datetime)}</div>
               <div className="score-display-large">{formatScore(game.final_score_skywalkers, game.final_score_opponent)}</div>
             </div>
-            {game.video_url && (
-              <a href={game.video_url} target="_blank" rel="noopener noreferrer" className="btn-primary">
-                Watch Video
-              </a>
-            )}
           </div>
+          {game.video_url && (
+            <VideoPlayer 
+              videoUrl={game.video_url} 
+              title={`Game vs ${game.opponent_name}`}
+            />
+          )}
         </div>
 
         <div className="dashboard-card">
@@ -113,6 +130,13 @@ const GameDetails: React.FC = () => {
         onClose={() => setShowStatsModal(false)}
         onSuccess={() => loadGameData()}
         gameId={gameId}
+      />
+      
+      <GameModal
+        isOpen={showGameModal}
+        onClose={handleGameModalClose}
+        onSuccess={handleGameModalSuccess}
+        game={game}
       />
     </div>
   );

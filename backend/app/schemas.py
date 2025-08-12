@@ -35,6 +35,7 @@ class GameCreate(BaseModel):
     venue: Optional[str] = None
     final_score_skywalkers: Optional[int] = None
     final_score_opponent: Optional[int] = None
+    video_url: Optional[str] = None
 
 class GameResponse(BaseModel):
     id: int
