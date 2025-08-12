@@ -47,11 +47,20 @@
 .dashboard-header {
   background: var(--gradient-primary);
   color: white;
-  padding: 20px 40px;
+  padding: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.dashboard-header-content {
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow-lg);
 }
 
 .header-left {
@@ -67,9 +76,10 @@
 }
 
 .nav-logo {
-  height: 40px;
-  width: 40px;
-  object-fit: contain;
+  height: 48px;
+  width: 48px;
+  object-fit: cover;
+  border-radius: 50%;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 

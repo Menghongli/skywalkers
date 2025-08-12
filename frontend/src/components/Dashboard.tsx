@@ -127,39 +127,40 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <div className="header-left">
-          <div className="header-logo-title">
-            <img src="/skywalkers-logo.png" alt="Skywalkers Logo" className="nav-logo" />
-            <h1>Skywalkers Dashboard</h1>
+        <div className="dashboard-header-content">
+          <div className="header-left">
+            <div className="header-logo-title">
+              <img src="/skywalkers-logo.png" alt="Skywalkers Logo" className="nav-logo" />
+            </div>
+            <nav className="dashboard-nav">
+              <button 
+                className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('dashboard'); navigate('/'); }}
+              >
+                Dashboard
+              </button>
+              <button 
+                className={`nav-btn ${activeTab === 'games' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('games'); navigate('/games'); }}
+              >
+                Games
+              </button>
+            </nav>
           </div>
-          <nav className="dashboard-nav">
-            <button 
-              className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('dashboard'); navigate('/'); }}
-            >
-              Dashboard
-            </button>
-            <button 
-              className={`nav-btn ${activeTab === 'games' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('games'); navigate('/games'); }}
-            >
-              Games
-            </button>
-          </nav>
-        </div>
-        <div className="user-info">
-          {isAuthenticated ? (
-            <>
-              <span>Welcome, {user?.name}!</span>
-              <ThemeToggle />
-              <button onClick={logout} className="logout-btn">Logout</button>
-            </>
-          ) : (
-            <>
-              <ThemeToggle />
-              <button onClick={() => navigate('/login')} className="login-btn">Admin Login</button>
-            </>
-          )}
+          <div className="user-info">
+            {isAuthenticated ? (
+              <>
+                <span>Welcome, {user?.name}!</span>
+                <ThemeToggle />
+                <button onClick={logout} className="logout-btn">Logout</button>
+              </>
+            ) : (
+              <>
+                <ThemeToggle />
+                <button onClick={() => navigate('/login')} className="login-btn">Admin Login</button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 

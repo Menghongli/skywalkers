@@ -1,17 +1,17 @@
 # Development environment management
 db-start:
-    docker-compose up -d postgres
+    docker compose up -d postgres
 
 db-stop:
-    docker-compose stop postgres
+    docker compose stop postgres
 
 db-reset:
-    docker-compose down postgres
+    docker compose down postgres
     docker volume rm skywalkers_postgres_data || true
-    docker-compose up -d postgres
+    docker compose up -d postgres
 
 db-logs:
-    docker-compose logs -f postgres
+    docker compose logs -f postgres
 
 # Backend with local PostgreSQL
 backend-dev:
