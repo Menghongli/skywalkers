@@ -27,6 +27,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [showStatsScraperModal, setShowStatsScraperModal] = useState(false);
   const [showStatsVerificationModal, setShowStatsVerificationModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Get stats from completed games only
   const totalGames = recentGames.length; // Only count completed games
@@ -124,30 +125,90 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
     refreshGames(); // Refresh games data instead of loading stats
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleNavClick = (tab: 'dashboard' | 'games' | 'admin', path: string) => {
+    setActiveTab(tab);
+    navigate(path);
+    setIsMobileMenuOpen(false); // Close mobile menu on navigation
+  };
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="dashboard-header-content">
           <div className="header-left">
-            <div className="header-logo-title">
+            <div className="header-logo-title" onClick={() => handleNavClick('dashboard', '/')}>
               <img src="/skywalkers-logo.png" alt="Skywalkers Logo" className="nav-logo" />
             </div>
-            <nav className="dashboard-nav">
+            
+            {/* Hamburger Menu Button */}
+            <div className="hamburger-container">
+              <button 
+                className="hamburger-menu-btn"
+                onClick={toggleMobileMenu}
+                aria-label="Toggle mobile menu"
+              >
+                <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+                <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+                <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+              </button>
+              
+              {/* Mobile Navigation Dropdown */}
+              {isMobileMenuOpen && (
+                <div className="mobile-dropdown">
+                  <div 
+                    className={`dropdown-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+                    onClick={() => handleNavClick('dashboard', '/')}
+                  >
+                    Dashboard
+                  </div>
+                  <div 
+                    className={`dropdown-item ${activeTab === 'games' ? 'active' : ''}`}
+                    onClick={() => handleNavClick('games', '/games')}
+                  >
+                    Games
+                  </div>
+                  {isAuthenticated ? (
+                    <>
+                      <div className="dropdown-separator"></div>
+                      <div className="dropdown-item" onClick={logout}>
+                        Logout
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="dropdown-separator"></div>
+                      <div className="dropdown-item" onClick={() => navigate('/login')}>
+                        Admin Login
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Desktop Navigation */}
+            <nav className="dashboard-nav desktop-nav">
               <button 
                 className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('dashboard'); navigate('/'); }}
+                onClick={() => handleNavClick('dashboard', '/')}
               >
                 Dashboard
               </button>
               <button 
                 className={`nav-btn ${activeTab === 'games' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('games'); navigate('/games'); }}
+                onClick={() => handleNavClick('games', '/games')}
               >
                 Games
               </button>
             </nav>
           </div>
-          <div className="user-info">
+          
+          {/* Desktop User Info */}
+          <div className="user-info desktop-user-info">
             {isAuthenticated ? (
               <>
                 <span>Welcome, {user?.name}!</span>
