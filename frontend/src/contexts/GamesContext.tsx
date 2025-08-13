@@ -53,19 +53,21 @@ export const GamesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Memoized computed values
   const recentGames = React.useMemo(() => {
-    return games.filter(game => 
-      game.final_score_skywalkers !== undefined && game.final_score_opponent !== undefined
-    ); // Show all recent games (completed games)
+    const now = new Date(); // Current date and time
+    
+    return games.filter(game => {
+      // Only show games that have already happened (past date/time)
+      return game.datetime <= now;
+    }).sort((a, b) => b.datetime.getTime() - a.datetime.getTime()); // Sort by date/time descending (most recent first)
   }, [games]);
 
   const upcomingGames = React.useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date(); // Current date and time
     
     return games.filter(game => {
-      return game.datetime >= today || 
-             (game.final_score_skywalkers === undefined && game.final_score_opponent === undefined);
-    }).sort((a, b) => a.datetime.getTime() - b.datetime.getTime()); // Show all upcoming games
+      // Only show games that haven't happened yet (future date/time)
+      return game.datetime > now;
+    }).sort((a, b) => a.datetime.getTime() - b.datetime.getTime()); // Sort by date/time ascending
   }, [games]);
 
   const value: GamesContextType = {
