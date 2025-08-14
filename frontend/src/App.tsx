@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import './App.css';
 // @ts-ignore - type resolver sometimes misses freshly added files in certain editors
 import GameDetails from './components/GameDetails';
+import { Analytics } from "@vercel/analytics/react"
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
@@ -28,6 +29,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <Analytics />
       <ThemeProvider>
         <AuthProvider>
           <GamesProvider>
