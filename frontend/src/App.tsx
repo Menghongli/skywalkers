@@ -20,6 +20,7 @@ function AppContent() {
         <Route path="/games" element={<Dashboard initialTab="games" />} />
         <Route path="/games/:id" element={<Dashboard content={<GameDetails />} />} />
         <Route path="/admin" element={isAuthenticated ? <Dashboard initialTab="admin" /> : <AuthPage />} />
+        <Route path="/players" element={isAuthenticated ? <Dashboard initialTab="players" /> : <AuthPage />} />
         <Route path="/login" element={<AuthPage />} />
       </Routes>
     </div>

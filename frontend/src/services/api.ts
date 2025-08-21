@@ -47,6 +47,30 @@ export const authAPI = {
   },
 };
 
+export interface Player {
+  id: number;
+  name: string;
+  jersey_number: number;
+  date_joined: string;
+  is_active: number;
+}
+
+export interface PlayerCreate {
+  name: string;
+  jersey_number: number;
+}
+
+export interface PlayerUpdate {
+  name?: string;
+  jersey_number?: number;
+  is_active?: number;
+}
+
+export interface PlayerMerge {
+  source_player_id: number;
+  target_player_id: number;
+}
+
 export const adminAPI = {
   getAllUsers: async (): Promise<User[]> => {
     const response = await api.get('/admin/users');
@@ -60,6 +84,37 @@ export const adminAPI = {
 
   deleteUser: async (userId: number): Promise<{ message: string }> => {
     const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
+  },
+
+  // Player management endpoints
+  getAllPlayers: async (): Promise<Player[]> => {
+    const response = await api.get('/admin/players');
+    return response.data;
+  },
+
+  createPlayer: async (data: PlayerCreate): Promise<Player> => {
+    const response = await api.post('/admin/players', data);
+    return response.data;
+  },
+
+  updatePlayer: async (playerId: number, data: PlayerUpdate): Promise<Player> => {
+    const response = await api.put(`/admin/players/${playerId}`, data);
+    return response.data;
+  },
+
+  deactivatePlayer: async (playerId: number): Promise<{ message: string }> => {
+    const response = await api.delete(`/admin/players/${playerId}`);
+    return response.data;
+  },
+
+  activatePlayer: async (playerId: number): Promise<{ message: string }> => {
+    const response = await api.post(`/admin/players/${playerId}/activate`);
+    return response.data;
+  },
+
+  mergePlayers: async (data: PlayerMerge): Promise<{ message: string }> => {
+    const response = await api.post('/admin/players/merge', data);
     return response.data;
   },
 };
@@ -140,7 +195,6 @@ export interface PlayerGameStats {
     id: number;
     name: string;
     jersey_number: number;
-    position?: string;
   };
 }
 

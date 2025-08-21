@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { adminAPI, User, UserCreateData } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import CreateManagerModal from './CreateManagerModal';
+import PlayerManagement from './PlayerManagement';
+import './PlayerManagement.css';
 
 const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'users' | 'players'>('users');
   const { user } = useAuth();
 
   const fetchUsers = async () => {
@@ -56,55 +59,79 @@ const AdminPanel: React.FC = () => {
   return (
     <div className="admin-panel">
       <div className="admin-header">
-        <h2>User Management</h2>
-        <button 
-          className="create-user-btn"
-          onClick={() => setShowCreateModal(true)}
-        >
-          Create User
-        </button>
+        <h2>Admin Panel</h2>
+        <div className="admin-tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}
+          >
+            User Management
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'players' ? 'active' : ''}`}
+            onClick={() => setActiveTab('players')}
+          >
+            Player Management
+          </button>
+        </div>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {activeTab === 'users' && (
+        <>
+          <div className="section-header">
+            <h3>User Management</h3>
+            <button 
+              className="create-user-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              Create User
+            </button>
+          </div>
 
-      <div className="users-table">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((userItem) => (
-              <tr key={userItem.id}>
-                <td>{userItem.id}</td>
-                <td>{userItem.name}</td>
-                <td>{userItem.email}</td>
-                <td className="actions">
-                  {userItem.id !== user?.id && (
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDeleteUser(userItem.id)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          {error && <div className="error-message">{error}</div>}
 
-      {showCreateModal && (
-        <CreateManagerModal
-          onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreateUser}
-        />
+          <div className="users-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((userItem) => (
+                  <tr key={userItem.id}>
+                    <td>{userItem.id}</td>
+                    <td>{userItem.name}</td>
+                    <td>{userItem.email}</td>
+                    <td className="actions">
+                      {userItem.id !== user?.id && (
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteUser(userItem.id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {showCreateModal && (
+            <CreateManagerModal
+              onClose={() => setShowCreateModal(false)}
+              onSubmit={handleCreateUser}
+            />
+          )}
+        </>
       )}
+
+      {activeTab === 'players' && <PlayerManagement />}
     </div>
   );
 };

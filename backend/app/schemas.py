@@ -52,17 +52,20 @@ class GameResponse(BaseModel):
 class PlayerCreate(BaseModel):
     name: str
     jersey_number: int
-    position: Optional[str] = None
-    height: Optional[str] = None
-    weight: Optional[float] = None
+
+class PlayerUpdate(BaseModel):
+    name: Optional[str] = None
+    jersey_number: Optional[int] = None
+    is_active: Optional[int] = None
+
+class PlayerMerge(BaseModel):
+    source_player_id: int
+    target_player_id: int
 
 class PlayerResponse(BaseModel):
     id: int
     name: str
     jersey_number: int
-    position: Optional[str]
-    height: Optional[str]
-    weight: Optional[float]
     date_joined: datetime
     is_active: int
     

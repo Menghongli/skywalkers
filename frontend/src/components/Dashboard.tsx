@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useGames } from '../contexts/GamesContext';
 import AdminPanel from './AdminPanel';
 import GamesPanel from './GamesPanel';
+import PlayerManagement from './PlayerManagement';
 import RecentGames from './RecentGames';
 import UpcomingGames from './UpcomingGames';
 import Leaderboard from './Leaderboard';
@@ -11,10 +12,11 @@ import ThemeToggle from './ThemeToggle';
 import GameModal from './GameModal';
 import StatsScraperModal from './StatsScraperModal';
 import StatsVerificationModal from './StatsVerificationModal';
+import './PlayerManagement.css';
 import { Game, statsAPI, PlayerGameStats } from '../services/api';
 
 interface DashboardProps {
-  initialTab?: 'dashboard' | 'games' | 'admin';
+  initialTab?: 'dashboard' | 'games' | 'admin' | 'players';
   content?: React.ReactNode;
 }
 
@@ -22,7 +24,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
   const { user, logout, isAuthenticated } = useAuth();
   const { recentGames, refreshGames } = useGames();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'games' | 'admin'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'games' | 'admin' | 'players'>(initialTab);
   const [showGameModal, setShowGameModal] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [showStatsScraperModal, setShowStatsScraperModal] = useState(false);
@@ -37,7 +39,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
     return sum + (game.final_score_skywalkers || 0);
   }, 0);
   
-  const [playerStats, setPlayerStats] = useState<Array<{name: string, points: number, fouls: number, avgPoints: number, avgFouls: number}>>([]);
+  const [playerStats, setPlayerStats] = useState<Array<{name: string, points: number, fouls: number, games: number, avgPoints: number, avgFouls: number}>>([]);
   const [statsLoading, setStatsLoading] = useState(false);
   
   // Calculate active players from loaded stats
@@ -93,6 +95,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
             name: player.name,
             points: player.points,
             fouls: player.fouls,
+            games: player.gamesCount,
             avgPoints: player.gamesCount > 0 ? Math.round((player.points / player.gamesCount) * 10) / 10 : 0,
             avgFouls: player.gamesCount > 0 ? Math.round((player.fouls / player.gamesCount) * 10) / 10 : 0,
           }))
@@ -129,7 +132,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const handleNavClick = (tab: 'dashboard' | 'games' | 'admin', path: string) => {
+  const handleNavClick = (tab: 'dashboard' | 'games' | 'admin' | 'players', path: string) => {
     setActiveTab(tab);
     navigate(path);
     setIsMobileMenuOpen(false); // Close mobile menu on navigation
@@ -171,6 +174,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
                   >
                     Games
                   </div>
+                  {isAuthenticated && (
+                    <div 
+                      className={`dropdown-item ${activeTab === 'players' ? 'active' : ''}`}
+                      onClick={() => handleNavClick('players', '/players')}
+                    >
+                      Players
+                    </div>
+                  )}
                   {isAuthenticated ? (
                     <>
                       <div className="dropdown-separator"></div>
@@ -204,6 +215,14 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
               >
                 Games
               </button>
+              {isAuthenticated && (
+                <button 
+                  className={`nav-btn ${activeTab === 'players' ? 'active' : ''}`}
+                  onClick={() => handleNavClick('players', '/players')}
+                >
+                  Players
+                </button>
+              )}
             </nav>
           </div>
           
@@ -256,7 +275,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
                 <div className="stats-overview">
                   <div className="stat-item">
                     <div className="stat-number">{totalGames}</div>
-                    <div className="stat-label">Games</div>
+                    <div className="stat-label">Games Played</div>
                   </div>
                   <div className="stat-item">
                     <div className="stat-number">{totalPoints}</div>
@@ -277,16 +296,18 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
                     <>
                       <div className="stats-header">
                         <div>Player</div>
-                        <div>Points</div>
+                        <div>Pts</div>
                         <div>Fouls</div>
+                        <div>GP</div>
                         <div>Avg Pts</div>
-                        <div>Avg Fouls</div>
+                        <div>Avg F</div>
                       </div>
                       {playerStats.map((player) => (
                         <div key={player.name} className="stats-row">
                           <div className="stats-player-name">{player.name}</div>
                           <div className="stat">{player.points}</div>
                           <div className="stat">{player.fouls}</div>
+                          <div className="stat">{player.games}</div>
                           <div className="stat">{player.avgPoints}</div>
                           <div className="stat">{player.avgFouls}</div>
                         </div>
@@ -306,6 +327,18 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
             <div className="admin-login-required">
               <h2>Admin Access Required</h2>
               <p>Please log in to access the admin panel.</p>
+              <button onClick={() => navigate('/login')} className="login-btn">
+                Login
+              </button>
+            </div>
+          )
+        ) : activeTab === 'players' ? (
+          isAuthenticated ? (
+            <PlayerManagement />
+          ) : (
+            <div className="admin-login-required">
+              <h2>Admin Access Required</h2>
+              <p>Please log in to access the player management.</p>
               <button onClick={() => navigate('/login')} className="login-btn">
                 Login
               </button>
