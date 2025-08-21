@@ -2582,7 +2582,7 @@
 
 .stats-header {
   display: grid;
-  grid-template-columns: 2fr 45px 45px 45px 50px 55px;
+  grid-template-columns: 2fr 45px 45px 70px 70px 55px;
   gap: 6px;
   padding: 6px 0;
   font-weight: 600;
@@ -2593,10 +2593,17 @@
   border-bottom: 2px solid var(--border-color);
 }
 
+.stats-header > div:first-child {
+  text-align: left;
+}
+
+.stats-header > div:not(:first-child) {
+  text-align: right;
+}
+
 .stats-row {
   display: grid;
-  grid-template-columns: 2fr 45px 45px 45px 50px 55px;
-  gap: 6px;
+  grid-template-columns: 2fr 45px 45px 70px 70px 55px;
   padding: 6px 0;
   border-bottom: 1px solid var(--border-color);
   align-items: center;
@@ -2619,8 +2626,14 @@
   text-overflow: ellipsis;
 }
 
+.stats-player-number {
+  font-weight: 600;
+  color: #667eea;
+  text-align: left;
+}
+
 .stats-row .stat {
-  text-align: center;
+  text-align: right;
   font-weight: 500;
   color: var(--text-primary);
 }

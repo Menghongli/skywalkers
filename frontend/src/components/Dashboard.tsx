@@ -39,7 +39,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
     return sum + (game.final_score_skywalkers || 0);
   }, 0);
   
-  const [playerStats, setPlayerStats] = useState<Array<{name: string, points: number, fouls: number, games: number, avgPoints: number, avgFouls: number}>>([]);
+  const [playerStats, setPlayerStats] = useState<Array<{jerseyNumber: number, name: string, points: number, fouls: number, games: number, avgPoints: number, avgFouls: number}>>([]);
   const [statsLoading, setStatsLoading] = useState(false);
   
   // Calculate active players from loaded stats
@@ -69,6 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
 
         // Aggregate stats by player
         const playerTotals: { [playerId: number]: { 
+          jerseyNumber: number;
           name: string; 
           points: number; 
           fouls: number; 
@@ -78,6 +79,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
         allGameStats.forEach(stat => {
           if (!playerTotals[stat.player_id]) {
             playerTotals[stat.player_id] = {
+              jerseyNumber: stat.player?.jersey_number || 0,
               name: stat.player?.name || 'Unknown',
               points: 0,
               fouls: 0,
@@ -92,6 +94,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
         // Convert to display format and calculate averages
         const playerStatsArray = Object.values(playerTotals)
           .map(player => ({
+            jerseyNumber: player.jerseyNumber,
             name: player.name,
             points: player.points,
             fouls: player.fouls,
@@ -99,7 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
             avgPoints: player.gamesCount > 0 ? Math.round((player.points / player.gamesCount) * 10) / 10 : 0,
             avgFouls: player.gamesCount > 0 ? Math.round((player.fouls / player.gamesCount) * 10) / 10 : 0,
           }))
-          .sort((a, b) => b.points - a.points); // Sort by total points descending
+          .sort((a, b) => b.avgPoints - a.avgPoints); // Sort by average points descending
 
         setPlayerStats(playerStatsArray);
       } catch (error) {
@@ -295,21 +298,21 @@ const Dashboard: React.FC<DashboardProps> = ({ initialTab = 'dashboard', content
                   ) : (
                     <>
                       <div className="stats-header">
-                        <div>Player</div>
+                        <div>#</div>
                         <div>Pts</div>
                         <div>Fouls</div>
-                        <div>GP</div>
+                        <div>Games Played</div>
+                        <div>Avg Fouls</div>
                         <div>Avg Pts</div>
-                        <div>Avg F</div>
                       </div>
                       {playerStats.map((player) => (
                         <div key={player.name} className="stats-row">
-                          <div className="stats-player-name">{player.name}</div>
+                          <div className="stats-player-number">#{player.jerseyNumber}</div>
                           <div className="stat">{player.points}</div>
                           <div className="stat">{player.fouls}</div>
                           <div className="stat">{player.games}</div>
-                          <div className="stat">{player.avgPoints}</div>
                           <div className="stat">{player.avgFouls}</div>
+                          <div className="stat">{player.avgPoints}</div>
                         </div>
                       ))}
                     </>
